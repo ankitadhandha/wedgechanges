@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# This script runs a WebKit server for the given Flamenco instance.
+# Ka-Ping Yee <ping@sims.berkeley.edu>, September 21, 2005
+
+FLAMENCO_DIR=`dirname $0`/..
+instance="$1"
+
+cd $FLAMENCO_DIR/instances
+if cd "$instance" 2>/dev/null; then true; else
+    echo "cannot access directory for instance '$instance' in `pwd`"
+    exit 1
+fi
+
+if [ -z "$instance" ]; then
+    echo "usage: $0 <instance>"
+    exit 1
+fi
+
+# As long as the WebKit server returns a 3, it wants to be restarted.
+
+exitcode=3
+while [ $exitcode -eq 3 ]; do
+    "./flamenco-$instance" >> log.txt 2>&1
+    exitcode=$?
+done

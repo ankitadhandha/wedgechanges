@@ -1,0 +1,132 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+</ol>
+</div>
+
+<div>
+<h3>Example Instance</h3>
+<p>
+An example collection
+is provided in the <code class="path">example</code>
+directory of the Flamenco distribution.  
+This collection contains information about the winners of the
+Nobel Prizes from 1901 to 2004, derived from webpages at <a
+href=http://nobelprize.org/>http://nobelprize.org/</a>.
+See the <a
+href=example_screenshots>example screenshots</a>
+<p>
+
+
+You can examine the TSV files in the
+<code class="path">example</code> directory to see how the data needs
+to be formatted.
+As can be seen in the 
+<code class="path">items.tsv</code> file,
+each item is a winner of the Nobel Prize.  
+As can be seen in the <code class="path">facets.tsv</code> file,
+the facets consist of:
+<span class="facet">gender</span>,
+<span class="facet">home country</span>,
+<span class="facet">affiliation</span>,
+<span class="facet">year awarded</span>, and
+<span class="facet">type of prize</span>.
+As can be seen in the <code class="path">attrs.tsv</code> file,
+the attributes consist of
+<span class="attr">usual name</span> (e.g.,Max Planck"),
+<span class="attr">long name</span> (e.g., Max Karl Ernst Ludwig Planck"),
+<span class="attr">year of birth</span>,
+<span class="attr">year of death</span>, 
+<span class="attr">url to photo</span>,
+<span class="attr">url to biography</span>, and
+<span class="attr">url to lecture</span>.
+(Note that the last three attributes link to urls at the
+nobelprize.org website.)
+
+<p>
+
+The two files <span class="path">facets.tsv</span> and <code
+class="path">attrs.tsv</code> were written by hand.  The file <code
+class="path">nobel.txt</code> was produced by the script <code
+class="path">getnobel</code>, which gathers information from webpages
+at <a href=http://nobelprize.org/>http://nobelprize.org/</a> The file <code
+class="path">nobel.txt</code> was then edited by hand to make the
+affiliation names more consistent.  The script <code
+class="path">makefacets</code> processed <code
+class="path">nobel.txt</code> to produce all the other <code
+class="path">*.tsv</code> files in this directory.  
+
+Running <code class="command"> <var>target</var>/bin/flamenco
+import</code> on this directory will use the <code
+class="path">*.tsv</code> files to create a new Flamenco instance for
+the Nobel Prize dataset.
+
+Note that the file <code class="path">text.tsv</code>, if present in
+the data directory when the instance is created, will cause a keyword
+index to be created automatically.  If <code
+class="path">text.tsv</code> is not present in the data directory, the
+<code class="command"><var>target</var>/bin/flamenco index</code>
+command must be run (after the <code
+class="command"><var>target</var>/bin/flamenco import</code> command)
+in order to create the keyword index.  Note that the automatic text index
+is done using the MySQL indexing whereas the 
+<code class="command">index</code> command invokes the java-based
+Lucene indexing facility.
+   
+<p>
+If you already have one or more flamenco instances installed, the nobel
+instance should be ready immediately after running 
+<code class="command"><var>target</var>/bin/flamenco import
+<var>example</var></code>.  
+<p>
+If this is the first instance you have built, you first must be sure
+you've installed the flamenco code (see <a
+href=install.html>installation section</a>).  After you have installed
+the code, you need to be sure to copy 
+<code class="path"><var>target</var>/bin/flamenco.cgi</code> to the
+directory from which your Web server can run CGI scripts.  
+
+<p>
+If everything is working correctly, clicking this link should activate
+the instance.  To see how the results should appear, see <a
+href=example_screenshots>the example screenshots</a>
+<p>
+Note that this example has a customized Collection.py file in the data
+directory.  The import script automatically copies the Collection.py
+file from the data diretory into the instance directory if one exists;
+if not, a default Collection.py file is placed in the instance directory.
+<p>
+Customizations for the nobel instance have been made to control which
+attribute is shown to represent the item in the middlegame, by
+modifying the itemdisplay() method (in this
+case, a link to the 'photo' attribute using a python html generation
+command to show images ('img') as well as code to show the standard
+name and the birthyear and deathyear of each laureate).  There is also
+code to control the view of the item in the endgame, by modifying the
+itemlisting() method.  This code also hides all attributes that
+contain links to the external nobel website, in the __init__() method.
+
+
+<div class="footer">
+Continue to the next section: <a href="files.html">File Layout and Permissions</a>.
+</div>
+
+</div>
+</div>

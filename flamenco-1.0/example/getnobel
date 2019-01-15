@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+# This script scrapes pages at http://nobelprize.org/ to produce nobel.txt.
+# This script requires scrape.py, available at http://zesty.ca/python/.
+# Ka-Ping Yee <ping@sims.berkeley.edu>, 2005-09-24
+
+from scrape import *
+
+prizes = 'chemistry economics literature medicine peace physics'.split()
+women = s.go('http://nobelprize.org/search/women.html').first(
+    'td', class_='normaltext').text
+file = open('nobel.txt', 'w')
+print 'Writing nobel.txt...'
+for year in range(1901, 2006):
+    print year
+    for prize in prizes:
+        r = s.go('http://nobelprize.org/%s/laureates/%s/' % (prize, year))
+        if not (r and r.first('table') and r.first('table').first('table')):
+            continue
+        rows = r.first('table').first('table').all('table')[2].all('tr')
+        if len(rows) < 2:
+            continue
+        if len(rows) < 8:
+            rows.insert(5, Region(''))
+        [quotations, photos, longnames, portions, countries, blank,
+            affiliations, lifespans] = [row.all('td') for row in rows[:8]]
+        linksets = r.first('td', class_='menulist').all('p')
+        for photo, longname, country, affiliation, lifespan, linkset in zip(
+            photos, longnames, countries, affiliations, lifespans, linksets):
+            name = linkset.first('a').text
+            organization = 'History of Organization' in linkset.text
+            print >>file, 'year:', year
+            print >>file, 'prize:', prize
+            print >>file, 'name:', name
+            print >>file, 'longname:', longname.text.replace('\n', ' ')
+            if not organization:
+                print >>file, 'gender:', name in women and 'female' or 'male'
+            image = photo.firsttag('img')
+            if image:
+                print >>file, 'photo:', urljoin(s.location, image['src'])
+            country = country.text.split(',')[-1].strip()
+            print >>file, 'country:', country
+            affils = affiliation.text.replace('\n', ', ').strip()
+            if affils.startswith('b. '):
+                lifespan = affiliation
+            elif affils:
+                print >>file, 'affiliation:', ' '.join(affils.split())
+            elif organization:
+                print >>file, 'affiliation:', country
+            for line in lifespan.text.split('\n'):
+                if line.startswith('b.'):
+                    print >>file, 'birthyear:', int(line[2:].strip())
+                if line.startswith('d.'):
+                    print >>file, 'deathyear:', int(line[2:].strip())
+            link = (linkset.first('a', content='Biography') or
+                    linkset.first('a', content='Autobiography'))
+            if link:
+                print >>file, 'biography:', urljoin(s.location, link['href'])
+            link = linkset.first('a', content='History of Organization')
+            if link:
+                print >>file, 'history:', urljoin(s.location, link['href'])
+            link = linkset.first('a', content='Nobel Lecture')
+            if link:
+                print >>file, 'lecture:', urljoin(s.location, link['href'])
+            print >>file
+file.close()

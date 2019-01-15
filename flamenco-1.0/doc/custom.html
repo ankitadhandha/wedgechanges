@@ -1,0 +1,130 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+</ol>
+</div>
+
+<div>
+<h3>Customizing Flamenco</h3>
+
+<p>
+You can customize the way Flamenco displays each collection.
+The display behaviour is defined in the Python module located at
+<code class="path"><var>target</var>/instances/<var>instance</var>/Collection.py</code>,
+where <var>target</var> is the target directory in which you
+chose to install Flamenco
+and <var>instance</var> is the name of the instance.
+<code class="path">Collection.py</code>
+defines a <code class="class">Collection</code> class,
+which inherits basic display behaviour
+from the <code class="class">BaseCollection</code> class.
+After making changes to <code class="path">Collection.py</code>,
+restart the instance using
+<code class="command">flamenco restart <var>instance</var></code>
+to see the effect of your changes.
+
+<h4>Text Strings</h4>
+
+<p>
+Many of the text strings in the Flamenco interface
+are defined as class variables
+on the <code class="class">Collection</code> class,
+and you can assign them other values
+in <code class="path">Collection.py</code>.
+For a complete list, see <code class="path"><var>target</var>/python/BaseCollection.py</code>.
+The strings you will most likely want to change are:
+
+<ul>
+<li><code class="variable">PAGE_TITLE</code> =
+the title of the page (shown in the window title bar)
+<li><code class="variable">PAGE_HEADING</code> =
+the main heading at the top of the page
+<li><code class="variable">PAGE_SUBHEADING</code> =
+the subheading at the top of the page
+</ul>
+
+<h4>Adjusting Layout</h4>
+<p>
+The layout of pages is also determined in part
+by class variables
+on the <code class="class">Collection</code> class.
+Some parameters you may want to adjust are:
+
+<ul>
+<li><code class="variable">ITEMS_PER_GROUP</code>
+= number of items to show in each group in a grouped result listing
+<li><code class="variable">ITEMS_PER_ROW</code>
+= number of items to show on each row in a result listing
+<li><code class="variable">ITEMS_PER_HISTORY_ROW</code>
+= number of items to show on each row in a history view
+<li><code class="variable">ITEMS_PER_GROUPED_PAGE</code>
+= maximum number of items to show on one page of grouped results
+<li><code class="variable">ITEMS_PER_UNGROUPED_PAGE</code>
+= maximum number of items to show on one page of ungrouped results
+</ul>
+
+<h4>Displaying Items</h4>
+<p>
+Flamenco needs to be told how you want to display your items.
+When you create a new Flamenco instance,
+a default <code class="path">Collection.py</code> file is installed.
+The default <code class="class">Collection</code> class
+displays items by showing just the value of the first attribute.
+You will probably want to customize how Flamenco displays your items
+to show more information and format it in a more useful way.
+The display of items is defined by two methods
+in the <code class="class">Collection</code> class,
+which you can edit:
+<code class="method">itemdisplay</code> and
+<code class="method">itemlisting</code>.
+
+<p>
+<code class="method">itemdisplay</code> is used to display
+a single item on its own page.
+Its arguments are <code class="variable">item</code>,
+the identifier of the single item being shown,
+and and <code class="variable">request</code>,
+a WebKit <code class="class">HTTPResponse</code> object
+that you can use to obtain information about the client.
+The request information could be used, for example,
+to restrict access to certain metadata to clients with certain IP addresses.
+
+<p>
+<code class="method">itemlisting</code> is used to display
+an item in a result listing.
+Its arguments are <code class="variable">item</code>,
+the identifier of the item,
+<code class="variable">index</code>,
+the index (starting from zero) of the item in the result set,
+<code class="variable">link</code>,
+a function you can use to link to a single-item page, and
+<code class="variable">query</code>,
+the query that produced the result set.
+
+<p>
+Your best bet for customizing item display
+is to start with the <code class="path">Collection.py</code> file
+that has already been placed in your instance directory and edit it.
+
+</div>
+
+<div class="footer">
+Continue to the next section:
+<a href="example.html">Example Instance</a>.
+</div>

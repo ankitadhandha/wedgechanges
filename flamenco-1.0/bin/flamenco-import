@@ -1,0 +1,707 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2004-2005 The Regents of the University of California.  All
+# rights reserved.  Permission is hereby granted, without written agreement
+# and without license or royalty fees, to use, copy, modify, and distribute
+# this software and its documentation for any purpose, provided that the
+# above copyright notice and the following two paragraphs appear in all
+# copies of this software.
+#
+# IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
+# OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY
+# OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+# ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION
+# TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+# Flamenco importer: loads a Flamenco collection from text files into MySQL.
+# Ka-Ping Yee <ping@sims.berkeley.edu>, September 21, 2005
+# Kevin Li <kevinli@sims.berkeley.edu>, July 22, 2003
+
+import sys, os, time, getpass, pprint
+from os.path import abspath, basename, dirname, isdir, isfile, join
+
+FLAMENCO_DIR = join(dirname(sys.argv[0]), '..')
+sys.path.append(join(FLAMENCO_DIR, 'python')) # MySQLdb might be in here
+import MySQLdb
+
+
+# ----------------------------------------------------------------- settings
+
+# If all items have values shorter than VARCHAR_SIZE for a given attribute,
+# that attribute's column gets type varchar(VARCHAR_SIZE), otherwise text.
+VARCHAR_SIZE = 200
+
+# Each facet is assigned a colour in HSV colour space, with hues equally
+# spaced around the colour wheel and the values cycling among these values.
+FACET_COLOR_VALUES = [0.8, 0.95]
+
+
+# ---------------------------------------------------------------- utilities
+
+class enumerate:
+    def __init__(self, sequence):
+        self.count = -1
+        self.iter = iter(sequence)
+    def __iter__(self):
+        return self
+    def next(self):
+        self.count += 1
+        return (self.count, self.iter.next())
+
+def wrap(text, width=70):
+    lines = [text[:-len(text.lstrip())]]
+    for word in text.split():
+        if len(lines[-1]) + 1 + len(word) > width:
+            lines.append(word)
+        else:
+            lines[-1] += ' ' + word
+    return '\n'.join(lines)
+
+def say(message):
+    sys.stdout.write(message)
+    sys.stdout.flush()
+
+def plural(count, plural='s', singular=''):
+    try:
+        count = len(count)
+    except TypeError:
+        pass
+    if count == 1:
+        return singular
+    else:
+        return plural
+
+def prompt(description, default=''):
+    message = description + (default and ' [%s]: ' % default or ': ')
+    return raw_input(message) or default
+
+def yesno(question, default='no'):
+    while 1:
+        answer = prompt(question, default).strip().lower()
+        if answer.startswith('y'):
+            return 1
+        if answer.startswith('n'):
+            return 0
+
+def quit(message):
+    print '\n'.join(map(wrap, message.split('\n')))
+    sys.exit(1)
+
+def getfields(line, count, path, lnum):
+    fields = line.replace('\r', '').replace('\n', '').split('\t')
+    if len(fields) == count:
+        return fields
+    quit(('Line %d of %s should have 2 tab-separated fields' +
+          '(item identifier, text), but it has %d.') %
+         (lnum, path, len(line.split('\t'))))
+
+def query(sql=''): # Either outfile or cursor is set below.
+    if outfile:
+        outfile.write(sql + '\n')
+    if cursor and sql.strip():
+        try:
+            cursor.execute(sql)
+        except MySQLdb.Error, err:
+            quit('The following SQL command failed:\n    %s\n' % sql +
+                 'MySQL said:\n    %s\n' % err.args[1])
+        except MySQLdb.Warning, err:
+            print 'MySQL gave a warning:\n    %s\n' % err.args[1]
+
+def sqlquote(value):
+    return "'%s'" % str(value).replace('\\', '\\\\').replace("'", "\\'"
+        ).replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t'
+        ).replace('\b', '\\b').replace('\x1a', '\\Z').replace('\x00', '\\0')
+
+def sqlvalues(*values):
+    quoted = []
+    for value in values:
+        if isinstance(value, int):
+            quoted.append(str(value))
+        elif isinstance(value, float):
+            quoted.append('%.12g' % value)
+        else:
+            quoted.append(sqlquote(value))
+    return '(' + ', '.join(quoted) + ')'
+
+def create(table, columns):
+    query('drop table if exists `%s`;' % table)
+    query('create table `%s` (\n    %s);' % (table, ',\n    '.join(columns)))
+    query()
+
+def insert(table, fields, records):
+    if isinstance(fields, str):
+        fields = fields.split()
+    while records:
+        rows = [sqlvalues(*record) for record in records[:100]]
+        records[:100] = []
+        query('insert into `%s` (%s) values\n    %s;' %
+              (table, ', '.join(fields), ',\n    '.join(rows)))
+    query()
+
+
+# ------------------------------------------------------- validate arguments
+
+if len(sys.argv) not in (2, 3) or not isdir(sys.argv[1]):
+    quit('''
+Please specify a directory with the data to import.  It should contain:
+
+    facets.tsv - facet names and descriptions
+    attrs.tsv - attribute names and descriptions
+    items.tsv - items and their attribute values
+    sortkeys.tsv - facets/attributes to be used as sort keys (optional)
+    text.tsv - full-text search material for each item (optional)
+
+There should be two additional files for each facet:
+
+    <facet>_terms.tsv - hierarchy of category terms in the facet
+    <facet>_map.tsv - map of items to category ids in the facet
+
+Usage: %s <directory>''' % sys.argv[0])
+DATA_DIR = sys.argv[1]
+
+# Locate and check for the existence of the input files.
+
+FACETS_PATH = join(DATA_DIR, 'facets.tsv')
+ATTRS_PATH = join(DATA_DIR, 'attrs.tsv')
+ITEMS_PATH = join(DATA_DIR, 'items.tsv')
+SORTKEYS_PATH = join(DATA_DIR, 'sortkeys.tsv')
+TEXT_PATH = join(DATA_DIR, 'text.tsv')
+TERMS_PATH = lambda facet: join(DATA_DIR, facet + '_terms.tsv')
+MAP_PATH = lambda facet: join(DATA_DIR, facet + '_map.tsv')
+
+for pathname in [FACETS_PATH, ATTRS_PATH, ITEMS_PATH]:
+    if not isfile(pathname):
+        quit('The required file %r is missing.' % pathname)
+facets = [line.split('\t')[0].strip()
+          for line in open(FACETS_PATH) if line.strip()]
+attrs = [line.split('\t')[0].strip()
+         for line in open(ATTRS_PATH) if line.strip()]
+for facet in facets:
+    for pathname in [TERMS_PATH(facet), MAP_PATH(facet)]:
+        if not isfile(pathname):
+            quit('The required file %r is missing.' % pathname)
+
+print '%s: %d facet%s, %d attribute%s found.' % (
+    DATA_DIR, len(facets), plural(facets), len(attrs), plural(attrs))
+print
+
+# ---------------------------------------------- establish an output channel
+
+outfile = cursor = None
+
+if len(sys.argv) > 2:
+    try:
+        outfile = open(sys.argv[2], 'w')
+    except:
+        quit('Could not write to the output file: %s' % sys.argv[2])
+    outfile.write(time.strftime('''
+# Flamenco collection (as a ready-to-load SQL script)
+# The following SQL script was generated on %Y-%m-%d at %H:%M:%S
+# from data files located at: ''') + abspath(DATA_DIR) + '''
+# To load it into a MySQL database, run the command:
+#
+#     mysql -hHOSTNAME -uUSERNAME -p DATABASENAME < FILENAME
+#
+# substituting the appropriate values for the hostname of the database
+# server, database username, database name, and the name of this file.
+
+''')
+
+else:
+    print 'Please provide login details for an account on your MySQL server'
+    print 'that has access to an existing database or permission to create'
+    print 'a new database in which to store this collection.'
+    dbhost, dbuser, dbname = 'localhost', '', basename(abspath(DATA_DIR))
+
+    while 1:
+        dbhost = prompt('MySQL server hostname', dbhost)
+        while 1:
+            dbuser = prompt('MySQL username', dbuser)
+            if dbuser.strip():
+                break
+            print 'The username cannot be blank.  Please enter a username.'
+        dbpass = getpass.getpass('MySQL password: ')
+
+        try:
+            conn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass)
+            cursor = conn.cursor()
+            break
+        except MySQLdb.Error, err:
+            print '\nCould not connect to the database.  MySQL said:'
+            print '    %s\n' % err.args[1]
+
+    while 1:
+        dbname = prompt('MySQL database name', dbname)
+        try:
+            cursor.execute('use `%s`' % dbname)
+            if yesno('Database %r exists.  Erase and rewrite it?' % dbname):
+                break
+        except MySQLdb.Error, err:
+            if yesno('Database %r does not exist.  Create it?' % dbname, 'yes'):
+                try:
+                    cursor.execute('create database `%s`' % dbname)
+                    cursor.execute('use `%s`' % dbname)
+                    break
+                except MySQLdb.Error, err:
+                    print '\nFailed to create a new database.  MySQL said:'
+                    print '    %s\n' % err.args[1]
+    print
+
+
+# ----------------------------------------- generate SQL for creating tables
+
+print 'Creating tables.'
+
+tables = {} # map of table names to lists of column specifications
+
+# Each of the following tables has a fixed structure.
+
+tables['facets'] = [
+    'ident varchar(100) primary key not null',
+    'name varchar(100), key name (name)',
+    'description text',
+    'hue float default NULL',
+    'value float default NULL',
+]
+
+tables['attrs'] = [
+    'ident varchar(100) primary key',
+    'name varchar(100) default null'
+]
+
+tables['sortkeys'] = [
+    'ident varchar(100) primary key',
+    'name varchar(100)'
+]
+
+tables['text'] = [
+    'item varchar(100) primary key',
+    'text text'
+]
+
+tables['user'] = [
+    'id int(11) primary key',
+    'name varchar(100)',
+    'opening_facet_terms int(11) default 12',
+    'opening_facet_columns int(11) default 2',
+    'opening_term_columns int(11) default 2',
+    "remember char(1) default '0'",
+    'facets text default null',
+    'item_column_width varchar(3) default 60',
+    'facet_column_width varchar(3) default 40',
+    'endgame_item_col_width varchar(3) default 60',
+    'endgame_facet_col_width varchar(3) default 40',
+    'password varchar(100)',
+    'sortby text default null',
+    'caps text default null',
+    'attrs text default null',
+    'display_opening_option int(1) default 1',
+    'display_middle_option int(1) default 1',
+    'display_end_option int(1) default 1',
+    'display_managegame_opening int(1) default 7',
+    'showpreviews int(1) default 1',
+    'email varchar(100)',
+    'available_tasks text',
+    'completed_tasks text'
+]
+
+tables['user_history'] = [
+    'id int(11) primary key default 0',
+    'userid int(11)',
+    'groupid int(11) default -1',
+    'item varchar(100)',
+    'itemidx varchar(100)',
+    'timestamp varchar(30)',
+    'favorites char(1) default 0'
+]
+
+tables['user_history_groups'] = [
+    'id int(11) primary key',
+    'userid int(11)',
+    'timestamp varchar(30)',
+    "groupname varchar(100) default 'No Group'"
+]
+
+tables['user_history_searches'] = [
+    'id int(11) primary key default 0',
+    'userid int(11)',
+    'timestamp varchar(30)',
+    'query text',
+    'facetgroup varchar(100)',
+    'sort varchar(100)',
+    "searchname varchar(100) default 'No Name'"
+]
+
+tables['tasks'] = [
+    'id int(9) auto_increment primary key',
+    'description text'
+]
+
+tables['tasks_questions'] = [
+    'id int(9) primary key',
+    'question text',
+    'type varchar(20)',
+    'optional char(1)'
+]
+
+tables['tasks_questions_responses'] = [
+    'id int(9) auto_increment primary key',
+    'questionid int(9)',
+    'response text',
+    'userid int(9)',
+    'taskid int(9)',
+    'timestamp text',
+    'interface varchar(10)'
+]
+
+tables['tasks_url'] = [
+    'id int(9) primary key',
+    'taskid varchar(100)',
+    'userid text',
+    'url text'
+]
+
+tables['log'] = [
+    'userid int(10)',
+    'taskid int(10)',
+    'letter char(2)',
+    'interface varchar(100)',
+    'time timestamp(14)',
+    'event varchar(20)',
+    'detail text',
+    'item varchar(10)',
+    'count int(9)',
+    'offset int(9)',
+    'facet varchar(30)',
+    'id int(9)',
+    'query text',
+    'post_task_1 char(2)',
+    'post_task_2 char(2)',
+    'post_task_3 char(2)',
+    'groupby varchar(100)',
+    'sort varchar(100)',
+    'indx int(9)',
+    'prevurl text',
+    'None text',
+    'ipaddr varchar(20)'
+]
+
+for table, columns in tables.items():
+    create(table, columns)
+
+
+# --------------------------------------- generate SQL for records in tables
+
+print 'Inserting data.'
+
+# user table
+insert('user', 'id name', [(0, 'default')])
+
+# facets table
+records = []
+for i, line in enumerate(open(FACETS_PATH)):
+    if line.strip():
+        ident, name, description = getfields(line, 3, FACETS_PATH, i + 1)
+        hue = i * 360.0/len(facets)
+        value = FACET_COLOR_VALUES[i % len(FACET_COLOR_VALUES)]
+        records.append((ident, name, description, hue, value))
+insert('facets', 'ident name description hue value', records)
+
+# attrs table
+records = []
+for i, line in enumerate(open(ATTRS_PATH)):
+    if line.strip():
+        ident, name = getfields(line, 2, ATTRS_PATH, i + 1)
+        records.append((ident, name))
+insert('attrs', 'ident name', records)
+
+# sortkeys table (optional)
+records, sortkeys = [], []
+if isfile(SORTKEYS_PATH):
+    for i, line in enumerate(open(SORTKEYS_PATH)):
+        if line.strip():
+            ident, name = getfields(line, 2, SORTKEYS_PATH, i + 1)
+            records.append((ident, name))
+            sortkeys.append(ident)
+    insert('sortkeys', 'ident name', records)
+
+# text table (optional)
+records = []
+if isfile(TEXT_PATH):
+    print 'Loading full-text search material.'
+    for i, line in enumerate(open(TEXT_PATH)):
+        if line.strip():
+            records.append(getfields(line, 2, TEXT_PATH, i + 1))
+    insert('text', 'item text', records)
+    query('alter table text add fulltext key text (text(100))')
+    query()
+
+# <facet> and item_<facet> tables
+sortvalues = {}
+for facet in facets:
+    # Check the uniqueness of the ids and leaf terms, then store their paths.
+    say('Facet %r: reading terms' % facet)
+    idlines, idpaths, pathids = {}, {}, {}
+    for i, line in enumerate(open(TERMS_PATH(facet))):
+        fields = line.replace('\r', '').replace('\n', '').split('\t')
+        if not fields: continue
+        path = tuple(fields[1:])
+        try:
+            id = int(fields[0])
+        except ValueError:
+            quit('The first field on line %d of %s is not an integer.' %
+                 (i + 1, TERMS_PATH(facet)))
+        if id in idlines:
+            quit(('The first field on line %d of %s contains a duplicate ' +
+                  'ID number (%d), which was previously used on line %d.') %
+                  (i + 1, TERMS_PATH(facet), id, idlines[id]))
+        idlines[id] = i + 1
+
+        if path in pathids:
+            quit(('Line %d of %s contains a duplicate category path %r,' +
+                  'which was previously defined on line %d.') %
+                  (i + 1, TERMS_PATH(facet), path, idlines[pathids[path]]))
+        idpaths[id] = path
+        pathids[path] = id
+
+    # Make sure each parent category has an id.
+    say(', building term tree')
+    lastid = max(idpaths.keys())
+    for id, path in idpaths.items():
+        for i in range(1, len(path)):
+            if path[:i] not in pathids:
+                lastid += 1
+                idpaths[lastid] = path[:i]
+                pathids[path[:i]] = lastid
+
+    # Create the <facet> table with enough columns to fit the deepest path.
+    maxlevel = max([len(path) for path in idpaths.values()])
+    columns = ['id int(9) not null primary key',
+               'name varchar(100) default null',
+               'parent int(9) default 0',
+               'level int(2) default 0'
+          ] + ['p%d int(9) default 0' % (l + 1) for l in range(maxlevel)
+          ] + ['count int(9) default 0']
+    create(facet, columns + ['key name (name)'])
+
+    # Rows in the <facet> table are (id, name, parent, level, path..., count).
+    records = []
+    parents = {}
+    for id, path in idpaths.items():
+        ids = [pathids[path[:i]] for i in range(1, len(path) + 1)]
+        parents[id] = len(ids) > 1 and ids[-2] or 0
+        records.append([id, path[-1], parents[id], len(path)] +
+                       (ids + [0]*maxlevel)[:maxlevel] + [0])
+    insert(facet, [column.split()[0] for column in columns], records)
+
+    # Create the item_<facet> table.
+    say(', building item map')
+    columns = ['item varchar(20) not null default 0',
+               'id int(9) not null default 0',
+               'leaf tinyint(1) default 0',
+               'key item (item)',
+               'key id (id)']
+    create('item_%s' % facet, columns)
+
+    # Rows in the item_<facet> table are (item, id, leaf).
+    terms = {}
+    path = MAP_PATH(facet)
+    for i, line in enumerate(open(path)):
+        line = line.replace('\r', '').replace('\n', '')
+        if not line: continue
+        item, id = getfields(line, 2, path, i + 1)
+        try:
+            id = int(id)
+        except ValueError:
+            quit('The second field on line %d of %s is not an integer.' %
+                 (i + 1, path))
+
+        if item not in terms:
+            terms[item] = {}
+        if id not in terms[item]:
+            terms[item][id] = 1 # leaf
+            pid = parents[id]
+            while pid:
+                terms[item][pid] = 0 # non-leaf
+                pid = parents[pid]
+
+    records = []
+    for item, idleaf in terms.items():
+        records += [(item, id, idleaf[id]) for id in idleaf]
+    insert('item_%s' % facet, 'item id leaf', records)
+
+    # Gather the facet values to support sortable facets.
+    if facet in sortkeys:
+        sortvalues[facet] = {}
+        for item, idleaf in terms.items():
+            terms = [idpaths[id][-1] for id in idleaf if idleaf[id]]
+            sortvalues[facet][item] = min(terms) # sort by first value
+    say('.\n')
+
+# items table
+
+# Determine the proper data type and length for columns in the items table.
+say('Items: reading items')
+lengths = [map(len, line.split('\t')) for line in open(ITEMS_PATH)]
+for i, fields in enumerate(lengths):
+    if len(fields) != len(attrs) + 1:
+        quit('Line %d of %s has %d tab-separated field%s, ' %
+             (i + 1, ITEMS_PATH, len(fields), plural(fields)) +
+             'but it should have %d, because %s defines %d attribute%s.' %
+             (len(attrs) + 1, ATTRS_PATH, len(attrs), plural(attrs)))
+maxlengths = lengths and map(max, zip(*lengths)) or [0]
+columns = ['item varchar(%d) not null primary key' % maxlengths[0]]
+
+if len(maxlengths) <= 1: # No items to examine, so allow arbitrary values.
+    columns += ['%s text' % attr for attr in attrs]
+else: # Make columns text or varchar depending whether all items would fit.
+    for attr, maxlength in zip(attrs, maxlengths[1:]):
+        if maxlength > VARCHAR_SIZE:
+            columns.append('%s text' % attr)
+        else:
+            columns.append('%s varchar(%d)' % (attr, VARCHAR_SIZE))
+
+columns.append("url text") # to support item addition
+for facet in sortvalues:
+    columns.append('%s varchar(100)' % facet) # for sortable facets
+create('items', columns)
+
+# Insert data records into the items table.
+records = []
+say(', building item records')
+for line in open(ITEMS_PATH):
+    fields = line.replace('\r', '').replace('\n', '').split('\t')
+    item = fields[0]
+    sortfields = [sortvalues[facet].get(item, '') for facet in sortvalues]
+    records.append(fields + [''] + sortfields)
+insert('items', [column.split()[0] for column in columns], records)
+say('.\n\n')
+
+
+# ------------------------------------------------ set up instance directory
+
+if cursor:
+    instname = dbname
+    while 1:
+        instname = prompt('Flamenco instance name', instname)
+        INSTANCE_DIR = join(FLAMENCO_DIR, 'instances', instname)
+        if isdir(INSTANCE_DIR):
+            print 'Updating existing directory:\n    %s' % INSTANCE_DIR
+            break
+        else:
+            try:
+                os.mkdir(INSTANCE_DIR)
+                os.chmod(INSTANCE_DIR, 0755)
+                print 'Created instance directory:\n    %s' % INSTANCE_DIR
+                break
+            except OSError, err:
+                print '\nFailed to create directory:\n    %s' % INSTANCE_DIR
+                print 'The error was:\n    %s' % err.args[1]
+    print
+
+    # Create files and directories that WebKit needs to write,
+    # and make them world-writable so WebKit can run as any user.
+
+    for dirname in '''Cache Cache/MiddleKit Cache/MiscUtils Cache/PSP 
+                      Cache/TaskKit Cache/UserKit Cache/WebUtils
+                      ErrorMsgs Logs Sessions'''.split():
+        path = join(INSTANCE_DIR, dirname)
+        if not isdir(path):
+            os.mkdir(path)
+        os.chmod(path, 0777)
+
+    for filename in '''address.text appserverpid.txt
+                       log.txt Logs/Errors.csv'''.split():
+        path = join(INSTANCE_DIR, filename)
+        open(path, 'w').close()
+        os.chmod(path, 0777)
+
+    # Copy the directory of configuration files, with necessary changes.
+
+    CONFIGS_DIR = join(INSTANCE_DIR, 'Configs')
+    if not isdir(CONFIGS_DIR):
+        os.mkdir(CONFIGS_DIR)
+
+    SOURCE_CONFIGS_DIR = join(FLAMENCO_DIR, 'webware', 'WebKit', 'Configs')
+    configs = {}
+    for filename in os.listdir(SOURCE_CONFIGS_DIR):
+        if filename.endswith('.config'):
+            infile = open(join(SOURCE_CONFIGS_DIR, filename))
+            configs[filename] = eval(infile.read())
+
+    configs['AppServer.config']['Port'] = 'see instance.py'
+    configs['Application.config']['Contexts'] = {
+        'default': join(FLAMENCO_DIR, 'python')}
+
+    for filename, dictionary in configs.items():
+        outfile = open(join(CONFIGS_DIR, filename), 'w')
+        pprint.pprint(dictionary, outfile)
+        outfile.close()
+
+    # Install the launcher script.
+
+    SOURCE_PATH = join(FLAMENCO_DIR, 'bin', 'flamenco-launcher')
+    LAUNCH_PATH = join(INSTANCE_DIR, 'flamenco-%s' % instname)
+    outfile = open(LAUNCH_PATH, 'w')
+    outfile.write(open(SOURCE_PATH).read())
+    outfile.close()
+    os.chmod(LAUNCH_PATH, 0755)
+
+    # Get the port range to use.
+
+    print "In most cases, you can use the default port range (hit Return)."
+    print "Make sure these ports are not blocked by a firewall."
+    portrange = '21600-21609'
+    while 1:
+        portrange = prompt('WebKit port range', portrange)
+        try:
+            minport, maxport = portrange.split('-')
+            minport = int(minport.strip())
+            maxport = int(maxport.strip())
+            assert maxport >= minport
+            break
+        except:
+            print 'Please enter a numeric range in the form "min-max".'
+    print
+
+    # Write out the instance parameters.
+
+    INSTANCE_PATH = join(INSTANCE_DIR, 'instance.py')
+    outfile = open(INSTANCE_PATH, 'w')
+    outfile.write('''
+DBHOST = %r
+DBUSER = %r
+DBPASS = %r
+DBNAME = %r
+MINPORT = %d
+MAXPORT = %d
+''' % (dbhost, dbuser, dbpass, dbname, minport, maxport))
+    outfile.close()
+
+    # Set up the collection customization file.
+
+    SOURCE_PATH = join(DATA_DIR, 'Collection.py')
+    TARGET_PATH = join(INSTANCE_DIR, 'Collection.py')
+    outfile = open(TARGET_PATH, 'w')
+    if isfile(SOURCE_PATH):
+        outfile.write(open(SOURCE_PATH).read())
+        print 'Installed %s as the collection module.' % SOURCE_PATH
+    else:
+        SOURCE_PATH = join(FLAMENCO_DIR, 'python', 'GenericCollection.py')
+        outfile.write(open(SOURCE_PATH).read())
+        print 'Installed a generic collection module.  To customize it, edit:'
+        print '    %s' % TARGET_PATH
+    outfile.close()
+
+    print '''
+Instance %r is ready.  If you need to change settings, edit:
+    %s
+''' % (instname, INSTANCE_PATH)
+
+else:
+    print 'Finished writing SQL script to %s.' % sys.argv[2]

@@ -1,0 +1,37 @@
+Flamenco example collection: Nobel Prize winners
+------------------------------------------------
+
+This example collection contains the winners of the Nobel Prizes from
+1901 to 2004.  Each item is a winner of the Nobel Prize.
+
+As facets.tsv shows, the items are classified by gender, home country,
+affiliation, the year of the Nobel Prize, and the type of the Nobel
+Prize awarded.  And as attrs.tsv shows, each winner has a "usual name"
+(such as "Max Planck"), a "long name" (such as "Max Karl Ernst Ludwig
+Planck"), URL to a photo, and URL to their Nobel Lecture.  Individual
+winners also have a URL to a biography and years of birth and death;
+organizations have a URL to a description of their history.
+
+The two files facets.tsv and attrs.tsv were written by hand.  The
+file nobel.txt was produced by the script "getnobel", which gathers
+information from webpages at http://nobelprize.org/.  nobel.txt was
+then edited by hand to make the affiliation names more consistent.
+The script "makefacets" processed nobel.txt to produce all the other
+*.tsv files in this directory:
+    
+    items.tsv               text.tsv
+
+    gender_terms.tsv        gender_map.tsv
+    country_terms.tsv       country_map.tsv
+    affiliation_terms.tsv   affiliation_map.tsv
+    prize_terms.tsv         prize_map.tsv
+    year_terms.tsv          year_map.tsv
+
+Running "flamenco import" on this directory will use the *.tsv files
+to create a new Flamenco instance for the Nobel Prize dataset.
+
+Please see the detailed documentation in the "doc" directory for more
+information on how to format a collection for loading into Flamenco.
+
+
+-- Ka-Ping Yee <ping@sims.berkeley.edu>, 2005-09-23

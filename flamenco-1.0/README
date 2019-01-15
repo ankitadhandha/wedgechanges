@@ -1,0 +1,20 @@
+
+Flamenco 1.0
+
+    http://flamenco.berkeley.edu/
+    School of Information 
+    University of California, Berkeley
+
+________________________________________________________________
+
+Flamenco is a web-based interface for browsing large collections
+of items using hierarchical faceted metadata.
+
+Please see the detailed documentation in the "doc" subdirectory.
+
+To install Flamenco, run the command:
+
+    ./install
+
+in this directory and follow the instructions.
+

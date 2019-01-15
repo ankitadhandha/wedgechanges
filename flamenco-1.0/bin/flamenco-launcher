@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+# Do not run this program directly.  Use "flamenco start <instance>".
+
+# This Python program is started by the "flamenco" utility to launch a
+# Flamenco instance.  The AppServer used here makes a few changes to
+# ThreadedAppServer (the standard WebKit application server) to ensure
+# that it shuts down cleanly when anything goes wrong or when the
+# pidfile is removed.  Permissions are set on the pidfile so that any
+# user can remove it, so any user can start or stop Flamenco instances.
+# In particular, this includes whatever user the HTTP server runs as.
+
+import sys, os, time, socket, instance
+sys.path.insert(1, '../../webware')
+PIDFILE = 'appserverpid.txt'
+
+def say(message):
+    sys.stdout.write(message)
+    sys.stdout.flush()
+
+# Empty the pidfile and wait for any existing server to stop.
+if os.path.isfile(PIDFILE) and os.path.getsize(PIDFILE):
+    try:
+        file = open(PIDFILE, 'w')
+        file.close()
+    except:
+        pass
+    time.sleep(2)
+
+from WebKit import Profiler, ThreadedAppServer
+Profiler.startTime = time.time() # If left unset, errors will occur later.
+
+class AppServer(ThreadedAppServer.ThreadedAppServer):
+    # Instead of using a fixed port number, search for an available port.
+    def address(self):
+        if self._addr:
+            return self._addr
+
+        host = self.setting('Host')
+        for port in range(instance.MINPORT, instance.MAXPORT + 1):
+            try:
+                # Attempt to listen on and connect to this port.
+                s = socket.socket()
+                s.bind((host, port))
+                s.listen(5)
+                c = socket.socket()
+                c.settimeout(0.5)
+                c.connect((host, port))
+                c.close()
+                s.close()
+            except socket.error, err:
+                say('Port %d: %s.\n' % (port, err))
+                continue
+            say('Found an available port: %d.\n' % port)
+            self._addr = (host, port)
+            return self._addr
+        else:
+            say('''
+All ports from %d to %d are unavailable.  Adjust MINPORT and MAXPORT in:
+    %s
+or check whether a firewall is blocking these ports.
+
+''' % (instance.MINPORT, instance.MAXPORT, instance.__file__))
+            raise RuntimeError('No ports are available.')
+
+    # Make WebKit quit properly if an error occurs during startup.  Without
+    # this change, a failure in binding to the server port triggers an
+    # error handler, which calls awakeSelect, which may hang waiting for a
+    # connection to the server port since we didn't bind to it.
+    def awakeSelect(self):
+        if Profiler.readyTime: # This means the server is ready.
+            ThreadedAppServer.ThreadedAppServer.awakeSelect(self)
+
+    # Make the application server quit when the pidfile disappears.
+    # This function is called about once every second.
+    def restartIfNecessary(self):
+        ThreadedAppServer.ThreadedAppServer.restartIfNecessary(self)
+        if not os.path.isfile(PIDFILE) or not os.path.getsize(PIDFILE):
+            say('Shutting down because %s is empty.\n' % PIDFILE)
+            self.running = 0
+
+# Use the instance directory as WebKit's working directory.
+ThreadedAppServer.server = server = AppServer('')
+
+# Start the WebKit server and always try to shut down cleanly.
+try:
+    server.mainloop()
+except:
+    try:
+        say('Exception in main loop: %s\n' % sys.exc_info())
+    except:
+        pass
+server.initiateShutdown()

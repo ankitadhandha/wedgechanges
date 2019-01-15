@@ -1,0 +1,274 @@
+#!/usr/bin/env bash
+
+# This is the main script for Flamenco administration.  It starts, stops,
+# and creates new Flamenco instances by calling other helper scripts.
+# Ka-Ping Yee <ping@sims.berkeley.edu>, September 21, 2005
+
+FLAMENCO_DIR='/usr/local/flamenco'
+
+# ---------------------------------------------------------------- functions
+
+# Print a usage message.
+usage() {
+    echo "Usage: $0 <action> <instance>"
+    echo
+    echo "Available actions are:"
+    echo "    status  - list all processes and instances"
+    echo "    start   - start an instance"
+    echo "    stop    - stop an instance"
+    echo "    restart - stop and then restart an instance"
+    echo "    kill    - kill all instances (last resort, run as root)"
+    echo "    import  - import a collection and create a new instance"
+    echo "    index   - enable text search using Lucene instead of MySQL"
+    echo
+}
+
+# Test if a process has terminated.
+terminated() {
+    pid=$1
+    if ps -o pid -p $pid | grep -c $pid >/dev/null; then
+        user=`ps -o user -p $pid | tail -1 | awk '{print $1}'`
+        return 1 # still running
+    else
+        return 0
+    fi
+}
+
+# Wait up to 9 seconds for a condition to become true.
+waitfor() {
+    condition="$1"
+    for count in 1 2 3 4 5 6 7 8 9; do
+        if $condition; then break; fi
+        sleep 1
+        echo -n '.'
+    done
+    $condition
+}
+
+# Clean up all stale pidfiles.
+checkpidfiles() {
+    if cd $FLAMENCO_DIR/instances; then
+        allinstances=`echo *`
+        if [ -n "$allinstances" -a "$allinstances" != "*" ]; then
+            for i in $allinstances; do
+                pidfile=$FLAMENCO_DIR/instances/$i/appserverpid.txt
+                if [ -s $pidfile ]; then
+                    pid=`cat $pidfile`
+                    if terminated $pid; then
+                        echo "Clearing stale $pidfile ($pid not running)."
+                        cp /dev/null $pidfile
+                    fi
+                fi
+            done
+        fi
+    fi
+}
+
+# Check if an instance is running.
+running() {
+    instance="$1"
+    pidfile=$FLAMENCO_DIR/instances/$instance/appserverpid.txt
+    if [ -s $pidfile ]; then
+        pid=`cat $pidfile`
+        if terminated $pid; then
+            return 1
+        fi
+        return 0
+    fi
+    return 1
+}
+
+# Print a list of Flamenco instances.
+instancelist() {
+    if cd $FLAMENCO_DIR/instances; then
+        allinstances=`echo *`
+        if [ -n "$allinstances" -a "$allinstances" != "*" ]; then
+            echo "Available instances are:"
+            for i in $allinstances; do
+                if running $i; then
+                    echo "    $i (running as user $user, process $pid)"
+                else
+                    echo "    $i (not running)"
+                fi
+            done
+        else
+            echo "No instances have been installed.  To create one, do:"
+            echo "    $0 import <directory>"
+        fi
+    else
+        echo "Flamenco is not installed properly."
+    fi
+    echo
+}
+
+# Start a Flamenco instance.
+start() {
+    instance="$1"
+    if running $instance; then
+        echo "$instance is already running as process $pid."
+        return 0
+    else
+        echo -n "Starting $instance: "
+        nohup $FLAMENCO_DIR/bin/flamenco-server "$instance" >/dev/null &
+        if waitfor "[ -s $pidfile ]"; then
+            pid=`cat $pidfile`
+            echo "okay (running as process $pid)."
+            return 0
+        else
+            echo "failed."
+            echo
+            echo "The last few lines of the log file might offer clues:"
+            echo
+            INSTANCE_DIR="$FLAMENCO_DIR/instances/$instance"
+            tail -15 "$INSTANCE_DIR/log.txt" | sed -e 's/^/    /'
+            echo
+            return 1
+        fi
+    fi
+}
+
+# Stop a Flamenco instance.
+stop() {
+    instance="$1"
+    if running $instance; then
+        echo -n "Stopping $instance ($pid): "
+        cp /dev/null $pidfile 2>/dev/null
+        sleep 2
+        kill -TERM $pid 2>/dev/null
+        if waitfor "terminated $pid"; then
+            echo "okay."
+            return 0
+        else
+            echo "failed (still running)."
+            pids=`ps -A -o pid,command | \
+                  grep "[f]lamenco-$instance" | awk '{print $1}'`
+            echo -n "Killing processes: $pid $pids"
+            kill -KILL $pid $pids 2>/dev/null
+            if waitfor "terminated $pid"; then
+                echo "okay."
+                return 0
+            else
+                echo "failed."
+                return 1
+            fi
+        fi
+    else
+        echo "$instance is not running."
+        return 0
+    fi
+}
+
+# -------------------------------------------------------------- main script
+
+action="$1"
+shift
+
+if [ "$action" == index ]; then
+    echo 'If a Lucene index is built, Lucene is used instead of MySQL'
+    echo 'to perform full-text searches.  If Lucene indexing fails, the'
+    echo 'text search feature will still be available via MySQL.'
+    echo
+fi
+
+case $action in
+    (start|stop|restart|index)
+        if [ -z "$@" ]; then
+            echo "Usage: $0 $action <instance>"
+            echo
+            instancelist
+            exit 1
+        fi
+        if [ "$@" == ALL ]; then
+            if cd $FLAMENCO_DIR/instances; then
+                instances=*
+            fi
+            if [ -z "$instances" ]; then
+                instancelist
+                exit 1
+            fi
+        else
+            instances="$@"
+            for instance in $instances; do
+                if [ ! -d "$FLAMENCO_DIR/instances/$instance" ]; then
+                    echo "There is no instance named '$instance'."
+                    echo
+                    instancelist
+                    exit 1
+                fi
+            done
+        fi
+        checkpidfiles
+    ;;
+    (status|kill)
+        checkpidfiles
+        pids=`ps -A -o pid,command | grep [f]lamenco- | awk '{print $1}'`
+        if [ -n "$pids" ]; then
+            echo Flamenco processes found:
+            ps -A -o pid,user,command | grep [f]lamenco- | sed -e 's/^/    /'
+        else
+            echo No Flamenco processes found.
+        fi
+        echo
+    ;;
+    (import)
+        if [ ! -d "$1" ]; then
+            echo "Please specify a directory containing your collection."
+            echo
+            echo "Usage: $0 import <directory>"
+            exit 1
+        fi
+    ;;
+esac
+
+case $action in
+    (start)
+        for instance in $instances; do start $instance; done
+    ;;
+    (stop)
+        for instance in $instances; do stop $instance; done
+    ;;
+    (restart)
+        for instance in $instances; do stop $instance; done
+        for instance in $instances; do start $instance; done
+    ;;
+    (kill)
+        if [ -n "$pids" ]; then
+            echo Killing processes: $pids.
+            kill $pids 2>/dev/null
+            sleep 1
+            echo
+            kill -9 $pids 2>/dev/null
+            sleep 1
+            if ps -A -o pid,command | grep [f]lamenco- >/dev/null; then
+                echo Some Flamenco processes are still running:
+                ps -A -o pid,command | grep [f]lamenco- | sed -e 's/^/    /'
+                echo
+                echo 'To stop them all, do "flamenco kill" as root.'
+            else
+                echo All Flamenco processes have terminated.
+            fi
+        fi
+    ;;
+    (status)
+        instancelist
+    ;;
+    (import)
+        $FLAMENCO_DIR/bin/flamenco-import "$@"
+    ;;
+    (index)
+        classpath=$FLAMENCO_DIR/java
+        for jar in $FLAMENCO_DIR/software/*.jar; do
+            classpath="$classpath:$jar"
+        done
+        for instance in $instances; do
+            echo 'Attempting to build an index for instance "$instance".'
+            java -classpath $classpath Index $FLAMENCO_DIR/instances/$instance
+            echo
+        done
+    ;;
+    (*)
+        usage
+        instancelist
+        exit 1
+    ;;
+esac

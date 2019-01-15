@@ -1,0 +1,99 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+</ol>
+</div>
+
+<div>
+<h3>Troubleshooting</h3>
+
+<h4>The CGI script doesn't run at all.</h4>
+
+<p>
+If you get an error message like "Not Found",
+the CGI script is probably not installed at the URL you used.
+Relocate the script or check the URL.
+
+<p>
+If you get an error message like "Forbidden", "Permission Denied",
+or "Premature End of Script Headers",
+check the permissions on the CGI script.
+It needs to be executable by all users.
+If your Web server uses <code class="command">suexec</code>,
+it also needs to be writable <strong>only</strong> by its owner.
+To set these permissions,
+do <code class="command">chmod 755 flamenco.cgi</code>.
+If you still get a "Forbidden" error after checking the permissions,
+check your Web server configuration to make sure
+that CGI script execution is enabled
+in the location where you put the script.
+
+<p>
+Also, check the first line of the CGI script.
+The first line should consist of a number-sign and an exclamation point
+immediately followed by a command that will run Python.
+Try changing it to use the path
+to a specific <code class="command">python</code> executable
+for Python version 2.3 or higher,
+and make sure that the <code class="command">python</code> file
+you specify is executable by the Web server's user account.
+
+<h4>I clicked on the instance name, but Flamenco didn't start up.</h4>
+
+<p>
+If Flamenco fails to start,
+the last few lines of the log should be displayed in your Web browser.
+These messages may give you a clue as to why it failed.
+You can examine the log file at
+<code class="path"><var>target</var>/instances/<var>instance</var>/log.txt</code>
+to see more of the record of what happened.
+
+<p>
+If the log says that no ports were available,
+check whether the ports in the specified port range
+are blocked by a firewall
+or are being used by other services.
+
+<h4>Foreign or accented characters don't appear correctly in my browser.</h4>
+
+<p>
+Flamenco uses 8-bit strings throughout, not Unicode (unfortunately).
+All the names, category terms, and attribute values in the database
+are treated as strings in the ISO-8859-1 character set
+(also known as Latin-1),
+so only characters in that character set can be displayed.
+If you have accented characters in your data files,
+make sure that they are encoded using the Latin-1 character set.
+
+<h4>An error occurred while building the Lucene index.</h4>
+
+<p>
+Check to make sure that TCP access to your MySQL server is turned on.
+In some Linux configurations, TCP access is turned off by default
+(look for the <code class="variable">skip-networking</code> setting
+in <code class="path">my.cnf</code>, the MySQL configuration file).
+
+</div>
+
+<div class="footer">
+
+
+This documentation was written by <a href="http://zesty.ca/">Ka-Ping Yee</a>.
+
+</div>

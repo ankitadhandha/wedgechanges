@@ -1,0 +1,228 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+
+</ol>
+</div>
+
+<div>
+<h3>Installing Flamenco</h3>
+
+<p>
+To install Flamenco, download the distribution
+and unpack it to yield a <code class="path">flamenco</code> directory.
+Type the command <code class="command">cd flamenco</code>
+to change into that directory,
+and then give the command:
+<blockquote><code class="command">./install</code></blockquote>
+
+<p>
+The installer will scan your system for Python binaries
+and ask you to choose one.
+If it finds an acceptable version of Python,
+you can just press <span class="keypress">Return</span> to accept it,
+or you can enter the path to any Python binary that's at least version 2.3.
+If the Python you choose
+doesn't already have <span class="python">MySQLdb</span> installed,
+the Flamenco installer
+will attempt to build <span class="python">MySQLdb</span>
+for you at this point.
+
+<p>
+You will then be prompted for a target directory in which to install Flamenco.
+The default, <code class="path">/usr/local/flamenco</code>,
+is a reasonable place to install Flamenco if you are the system administrator.
+If you are not using an administrator account,
+you should choose a path that you control,
+such as one in your home directory like
+<code class="path">/home/<var>username</var>/flamenco</code>.
+
+<p>
+The installation script will then automatically copy and unpack the files
+you need to run Flamenco.
+
+<h4>Importing Your Data</h4>
+
+<p>
+The next step is to load your collection into Flamenco.   You must
+first set up a directory containing all the required data files (see the
+<a href=data.html>data section</a> for details on the names and contents of these TSV-formatted data
+files).  After you have the data directory ready, 
+give the command:
+<blockquote>
+<code class="command"><var>target</var>/bin/flamenco import <var>directory</var></code></blockquote>
+<p>
+where <var>target</var> is the target directory you chose for Flamenco
+and <var>directory</var> is the directory containing your data files.
+
+<p>
+Note that within the data directory, the <code
+class="path">text.tsv</code> file is used by the <code
+class="command"><var>target</var>/bin/flamenco import</code> command
+to create a keyword index (to facilitate keyword search).  If you have
+not created and placed a <code class="command">text.tsv</code> file in
+the data directory, the following command will create the index
+automatically (this may take a while depending on the amount of text
+in your collection): <blockquote> <code
+class="command"><var>target</var>/bin/flamenco index
+<var>directory</var></code></blockquote>
+
+<p>
+Importing a collection creates a new Flamenco <dfn>instance</dfn>.
+Each instance of the Flamenco application is an independently running server,
+with an associated collection, MySQL database,
+and optional customizations to the user interface.
+When you import a collection,
+you'll be asked to provide login information for the MySQL account,
+the name of a MySQL database, and a name for the Flamenco instance.
+The instance will reside at
+<code class="path"><var>target</var>/bin/instances/<var>instance</var></code>,
+where <var>instance</var> is the name of the instance.
+<b>Important</b>: Depending on your administrative settings, it may be
+the case that the MySQL database must already have been created within
+your MySQL account using MySQL administration tools before running the
+installation script.
+
+<p>
+You'll also be asked to supply a <dfn>port range</dfn>
+for WebKit to use, with the default being ports 21600 through 21609.
+Each Flamenco instance corresponds to a WebKit server
+that runs on its own TCP port.
+When an instance starts up,
+it will check the ports in the specified range one by one
+until an available port is found.
+So, by default, it will attempt to take port 21600,
+and if that is in use or otherwise unavailable,
+it will try port 21601, then 21602, and so on.
+In most cases you will not need to change the port range,
+so you can just press <span class="keypress">Return</span> when prompted.
+However, if you need to run more than ten instances,
+you'll need to extend the port range,
+or if your system has a firewall that blocks the default ports,
+you may need to change the port range.
+
+<p>
+You can create as many instances as you want
+with each one browsing a different collection (and using a separate
+MySQL database).
+You can even create more than one instance for the same collection
+(say, to try different variations on the user interface)
+as long as each instance uses a separate MySQL database.
+
+<p>
+The <code class="path">import</code> script loads your data from the tab-separated files,
+checks and normalizes it,
+and converts it to a series of SQL statements.
+If you need to save the results of this conversion,
+you can supply a filename as an additional argument.
+
+<blockquote>
+<code class="command"><var>target</var>/bin/flamenco import <var>directory</var> <var>filename</var></code></blockquote>
+
+If you supply a filename,
+the import program will write the SQL dump of your collection to that file
+instead of creating a new instance in Flamenco.
+
+<h4>Installing the CGI Script</h4>
+
+<p>
+Finally, you need to place the Flamenco CGI script
+somewhere that your Web server can see it.
+As the installation script will tell you,
+the file you need to copy is located at
+<code class="path"><var>target</var>/bin/flamenco.cgi</code>,
+where <var>target</var> is the target directory you chose for Flamenco.
+All Web access to all Flamenco instances
+will take place through this one script.
+You can put it anywhere that the Web server is willing to run CGI scripts.
+
+<p>
+If you have more than one version of Python on your system,
+you may need to edit the first line of the script to point
+at a Python executable that is version 2.3 or higher.
+
+<p>
+Then, use your Web browser to visit the CGI script in whatever
+location you put it.  You should get a page that lists your instance.
+Click on the instance name to start browsing with Flamenco.
+<p>
+
+For example, for a web server is hosted at <code
+class="path">http://flamenco.university.edu</code>, which processes
+CGI scripts in the directory <code
+class="path">/projects/flamenco/cgi-bin/</code>, you should place the
+<code class="path">flamenco.cgi</code> script in that directory.  Then to access the live
+flamenco instance, go to the url <code
+class="path">http://flamenco.university.edu/cgi-bin/flamenco.cgi</code>,
+which should show a link labeled with your instance name.
+Clicking on this link should activate the instance.  The image below
+shows an example of what this start page should look like when two
+instances (called <em>recipes</em> and <em>nobel</em>) have been installed
+successfully. 
+
+<p>
+<img src=images/flamenco_cgi.gif>
+
+<p>
+
+<h4>Restricted Execution</h4>
+
+<p>
+Flamenco is normally set up so that anyone can start instances
+just by accessing any URL that would be generated by the instance.
+(Any URL that begins with the URL to the CGI script,
+followed by a slash, the name of the instance, and another slash,
+accesses a page generated by the instance; 
+<code class="path">http://flamenco.university.edu/cgi-bin/flamenco.cgi</code>,
+in the example above.)
+This link can be
+used to restart the instance if, say, its connection to the MySQL
+server drops.  Therefore, when showing users how to access your
+flamenco instance, you may want to hide this url behind another
+link within an html document.
+
+<p>
+Additionally, any user on the system where Flamenco resides
+can shut down a Flamenco instance
+by emptying the <code class="path">appserverpid.txt</code> file in the
+instance directory.
+If you do not want other users
+to be able to start or shut down a particular instance, 
+turn off world-write permission
+for <code class="path">appserverpid.txt</code>
+and turn off world-execute permission
+for <code class="path">flamenco-<var>instance</var></code>:
+
+<blockquote>
+<code class="command">chmod go-w appserverpid.txt</code><br>
+<code class="command">chmod go-x flamenco-<var>instance</var></code>
+</blockquote>
+
+<p>
+These changes to the permissions
+will also prevent the CGI script from automatically starting up the instance
+whenever someone tries to access the instance;
+you will have to use
+<code class="command">flamenco start <var>instance</var></code>
+to start the instance.
+
+</div> <div class="footer"> Continue to the next
+section: <a href="admin.html">Administering Flamenco</a>.  </div>
+
+</html>

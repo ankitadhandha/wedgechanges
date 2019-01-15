@@ -1,0 +1,139 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+<li><a href="resources.html">Resources</a>
+</ol>
+</div>
+
+<div>
+<h3>Software Architecture</h3>
+
+<p>
+Flamenco is written in <a href="http://python.org/">Python</a> 
+and uses the <a href="http://webwareforpython.org/">Webware</a>
+application toolkit.
+The following diagram illustrates the Flamenco software architecture.
+The blocks labelled in a
+<span class="python">monospaced font</span> are Python modules.
+The blocks in colour are part of Flamenco;
+the blocks in grey are not.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="swarch">
+  <tr>
+    <td class="python" bgcolor="#a0c0ff" colspan=9>
+        Flamenco, Floogle, FrankenMatrix, etc.</td>
+    <td rowspan=7>&nbsp;</td>
+    <td class="python" bgcolor="#ffc0e0" colspan=2>FlamencoStyle</td>
+  </tr>
+  <tr>
+    <td bgcolor="#a0c0ff"></td>
+    <td class="python" bgcolor="#a0ffa0" colspan=3>components</td>
+    <td class="empty" bgcolor="#a0c0ff" rowspan=2></td>
+    <td class="python" bgcolor="#a0e0ff" colspan=4>InterfaceBase</td>
+    <td class="empty" bgcolor="#ffc0e0"></td>
+    <td class="python" bgcolor="#ff80c0">Style</td>
+  </tr>
+
+  <tr>
+    <td class="python" bgcolor="#ffffa0" colspan=3>metadb</td>
+    <td class="empty" bgcolor="#a0ffa0"></td>
+    <td class="empty" bgcolor="#a0e0ff"></td>
+    <td class="python" bgcolor="#80a0d0" colspan=2>Page</td>
+    <td class="python" bgcolor="#e0a0e0">logging</td>
+    <td class="empty" bgcolor="#ffc0e0"></td>
+    <td class="python" bgcolor="#80a0d0">Page</td>
+  </tr>
+  <tr>
+    <td class="python" bgcolor="#ffa0a0">query</td>
+    <td class="python" bgcolor="#ffc090">lucene</td>
+    <td bgcolor="#ffffa0"></td>
+    <td class="python" bgcolor="#80d080" colspan=4>html</td>
+    <td class="empty" bgcolor="#80a0d0"></td>
+    <td class="python" bgcolor="#c080e0">store</td>
+    <td class="python" bgcolor="#d09070">css</td>
+    <td class="empty" bgcolor="#80a0d0"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="other" bgcolor="#c0c0c0">Lucene</td>
+    <td class="python" bgcolor="#d0d0d0">MySQLdb</td>
+    <td colspan=3></td>
+    <td class="empty"></td>
+    <td class="other" bgcolor="#c0c0c0">WebKit</td>
+    <td class="python" bgcolor="#d0d0d0">MySQLdb</td>
+    <td></td>
+    <td class="other" bgcolor="#c0c0c0">WebKit</td>
+    </tr>
+  <tr>
+    <td></td>
+    <td class="other" bgcolor="#a0a0a0">Java</td>
+    <td class="other" bgcolor="#b0b0b0">MySQL</td>
+    <td colspan=5></td>
+    <td class="other" bgcolor="#b0b0b0">MySQL</td>
+    <td></td></tr>
+  <tr>
+    <td class="purpose" colspan=3>Faceted Metadata</td>
+    <td class="purpose" colspan=4>User Interface</td>
+    <td class="purpose" colspan=2>UI Persistence</td>
+    <td class="purpose" colspan=2>Stylesheets</td>
+  </tr>
+</table>
+
+<p>
+Metadata about items in the collection is stored in a SQL database.
+Flamenco uses MySQL, though any SQL database would be sufficient.
+<span class="python">MySQLdb</span> is the Python interface module to MySQL.
+Flamenco also uses the <a href="http://lucene.apache.org/">Lucene</a>
+search engine, written in Java, for its full-text search feature.
+If Java or Lucene is unavailable, full-text search is implemented using MySQL.
+The <span class="python">metadb</span> module
+is the core of Flamenco's faceted metadata implementation,
+providing an abstraction layer on top of the SQL database
+and text search functionality.
+
+<p>
+The <span class="python">html</span> module
+provides utility functions for generating HTML.
+The <span class="python">components</span> module
+uses information from the database to
+build parts of Flamenco's user interface.
+These parts are combined and laid out into Web pages
+by the <span class="python">Flamenco</span> module.
+<span class="python">Floogle</span> and
+<span class="python">FrankenMatrix</span>
+are other variations of the user interface
+that were tested and compared in our user studies.
+
+<p>
+The CSS for the user interface is dynamically generated
+by the <span class="python">FlamencoStyle</span> module,
+which builds on <span class="python">css</span>, a CSS rule generator,
+and <span class="python">Style</span>,
+a special kind of <span class="python">Page</span>
+for delivering CSS instead of HTML.
+
+<p>
+WebKit, which is part of Webware,
+serves the generated pages and stylesheets.
+
+</div>
+<div class="footer">
+Continue to the next section: <a href="prereq.html">Prerequisites</a>.
+</div>

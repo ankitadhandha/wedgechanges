@@ -1,0 +1,295 @@
+#!/bin/bash
+
+# This is the Flamenco installation script.  It copies and unpacks Flamenco
+# into a given target directory and configures it to reside there.
+
+cd `dirname $0`
+
+# ------------------------------------------------- choose a suitable Python
+
+pycheck() {
+    python=$1
+    if ! $python -c '' 1>/dev/null 2>/dev/null; then
+        version=
+        mysqldb=
+        return
+    fi
+    version=$($python -V 2>&1 | sed -e 's/^Python *//')
+    mysqldb=$($python -c 'from MySQLdb import connect; print 1' 2>/dev/null)
+}
+
+collect() {
+    candidate=$1
+    for element in ${array[*]}; do
+        if [ $candidate == $element ]; then return; fi
+    done
+    array=(${array[@]} $candidate)
+}
+
+# Gather a list of likely directories for binaries, skipping duplicates.
+
+array=()
+for dir in $(echo $PATH | tr : ' '); do
+    collect $dir
+done
+collect /bin
+collect /usr/bin
+collect /usr/local/bin
+
+# Find all the Python binaries in these directories.
+
+pythons=`find ${array[*]} -name "python*" -not -name "pythonw*" 2>/dev/null`
+
+# Check each Python binary for its version and the MySQLdb module.
+
+array=()
+adequate=
+first=1
+for python in $pythons; do
+    pycheck $python
+    if [ -z "$version" ]; then continue; fi
+    present=no
+    if [ -n "$mysqldb" ]; then present=yes; fi
+    good=" "
+    if [[ ! "$version" < 2.3 ]]; then
+        if [ -z "$adequate" ]; then
+            adequate=$python
+        fi
+        if [ -n "$mysqldb" ]; then
+            good="*"
+            collect $python
+        fi
+    fi
+    if [ -n "$first" ]; then
+        echo "Looking for Python binaries on your PATH:"
+        echo
+        echo "Version  MySQLdb   Binary"
+        first=
+    fi
+    # if [ -L $python ]; then python="$python -> "`readlink $python`; fi
+    printf " %-6s    %3s   %s %s\n" $version $present "$good" "$python"
+done
+echo
+
+# Allow the user to choose a Python binary or accept the first good choice.
+
+echo 'Flamenco requires Python version 2.3 or higher with MySQLdb.'
+echo
+
+if [ -n "${array[0]}" ]; then
+    echo 'In the above list, Python binaries marked with "*" meet both of'
+    echo 'these criteria.  (If you prefer, you can enter the path to any'
+    echo 'Python binary that is at least version 2.3, and Flamenco setup'
+    echo 'will attempt to build and install MySQLdb if it is missing.)'
+    echo
+    default=${array[0]}
+elif [ -n "$adequate" ]; then
+    echo 'The Python binaries on your PATH are listed above, but none meet'
+    echo 'both of these criteria.  Enter the path to any Python binary that'
+    echo 'is at least version 2.3.  Flamenco setup will attempt to build and'
+    echo 'install MySQLdb if it is missing.'
+    echo
+    default=$adequate
+elif [ -z "$first" ]; then
+    echo 'The Python binaries on your PATH are listed above, but none are'
+    echo 'version 2.3 or higher.  If you have Python 2.3 or higher, enter'
+    echo 'the path to the Python binary.  Flamenco setup will attempt to'
+    echo 'build and install MySQLdb if it is missing.'
+    echo
+    echo 'If you do not have Python version 2.3 or higher, press Ctrl-C to'
+    echo 'abort Flamenco setup.  Download Python from http://python.org/.'
+    echo
+    default=
+else
+    echo 'However, no working Python binaries were found on your PATH.'  
+    echo 'If you have Python 2.3 or higher, enter the path to the Python'
+    echo 'binary.  Flamenco setup will attempt to build and install MySQLdb'
+    echo 'if it is missing.'
+    echo
+    echo 'If you do not have Python version 2.3 or higher, press Ctrl-C to'
+    echo 'abort Flamenco setup.  Download Python from http://python.org/.'
+    echo
+    default=
+fi
+while true; do
+    if [ -n "$default" ]; then
+        echo -n "Path to Python binary [$default]: "
+    else
+        echo -n "Path to Python binary: "
+    fi
+    read python
+    if [ -z "$python" ]; then
+        if [ -z "$default" ]; then
+            continue
+        else
+            python=$default
+        fi
+    fi
+    pycheck $python
+    if [ -z "$version" ]; then
+        echo "$python is not a working Python binary."
+        echo
+    elif [[ "$version" < 2.3 ]]; then
+        echo "$python is version $version, but 2.3 or higher is required."
+        echo
+    else
+        break
+    fi
+done
+
+# Build MySQLdb if necessary.
+
+if [ -n "$mysqldb" ]; then
+    echo "$python looks good: version is $version and MySQLdb is present."
+    echo
+else
+    echo "$python is version $version but does not have MySQLdb."
+    echo "Building MySQLdb (this may take a few minutes)..."
+    cd software
+    tar xfz MySQL-python*.*z
+    cd MySQL-python*
+    cp ../MySQL-setup.py setup.py
+    $python setup.py build > setup.log 2>&1
+    if [ -f build/lib.*/_mysql.so ]; then
+        echo 'Looks good.'
+        echo
+        cd ../..
+    else
+        logfile=`pwd`/setup.log
+        echo
+        echo "MySQLdb failed to build.  For details, examine:"
+        echo
+        echo "    $logfile"
+        echo
+        echo "If you are an administrator for this computer, you can try"
+        echo "installing this module yourself.  You can download it from:"
+        echo
+        echo "    http://sourceforge.net/projects/mysql-python"
+        echo
+        echo "Then re-run the Flamenco installer after it is installed."
+        exit 1
+    fi
+fi
+
+# ------------------------------------------------ choose a target directory
+
+# Determine the target directory.
+
+if [ -n "$1" ]; then
+    default=$1
+elif [ -w /usr/local/flamenco -o -w /usr/local ]; then
+    default=/usr/local/flamenco
+else
+    default=$HOME/flamenco
+fi
+while true; do
+    echo -n "Install to directory [$default]: "
+    read target
+    if [ -z "$target" ]; then
+        target=$default
+    fi
+    target=`dirname "$target"/.` # remove any trailing slashes
+
+    # Make sure the target directory is okay to use.
+
+    if [ -d $target ]; then
+        if [ -d $target/instances ]; then
+            echo "Directories in $target/instances will be preserved."
+        fi
+        echo -n "Replace contents of existing directory at $target? "
+        read answer
+        case $answer in ([yY]*) ;; (*) echo; continue ;; esac
+        if cp install $target/; then rm $target/install; else
+            echo "Cannot write files to $target."
+            echo
+            continue
+        fi
+        rm -rf $target/{bin,java,python,software,webware}
+        break
+    else
+        if mkdir -p $target && [ -d "$target" ]; then 
+            if cp install $target/; then
+                rm $target/install
+                break
+            else
+                echo "Cannot write files to $target."
+                echo
+                continue
+            fi
+        else
+            echo "Cannot create $target."
+            echo
+            continue
+        fi
+    fi
+done
+echo "Installing Flamenco to $target."
+
+# ------------------------------------------------------------ install files
+
+# Copy scripts, adjusting the FLAMENCO_DIR and Python binary as needed.
+
+echo "Preparing scripts."
+mkdir -p $target/bin
+for file in bin/*; do
+    sed -e "s#^FLAMENCO_DIR *=.*#FLAMENCO_DIR='$target'#" \
+        -e 's|^#!.*python|#!'"$python|" $file > $target/$file
+done
+chmod a+rx $target/bin/*
+chmod g-w $target/bin/*.cgi # suexec will refuse to run group-writable scripts
+
+# Copy all other files.
+
+echo -n "Copying files to $target:"
+for dir in java python software; do
+    cp -a $dir $target/
+    echo -n " $dir"
+done
+echo .
+
+# Install MySQLdb if necessary.
+
+if [ -z "$mysqldb" ]; then
+    echo "Installing compiled MySQLdb module."
+    mkdir -p $target/python
+    cp -a software/MySQL-python*/build/lib.*/* $target/python/
+fi
+
+# Set up the instances directory.
+
+cd $target
+mkdir -p instances
+chmod -f a+rwxt instances # make it sticky so other users can create instances
+
+# Set up a copy of Webware.
+
+echo "Setting up Webware (this may take a few minutes)..."
+
+tar xzf software/Webware-*.tar.gz
+mv Webware-* webware
+cd webware
+python install.py --password-prompt=no >/dev/null
+
+# And we're done.
+
+echo
+echo "================================================================"
+echo
+echo "Flamenco has been installed at $target."
+echo
+echo "1.  Deploy the web interface by placing the Flamenco CGI script:"
+echo
+echo "    $target/bin/flamenco.cgi"
+echo
+echo "    in any directory where your webserver can run CGI scripts."
+echo
+echo "2.  Give Flamenco a collection to browse, using the command:"
+echo
+echo "    $target/bin/flamenco import <directory>"
+echo
+echo "    where <directory> is a directory containing your data files."
+echo '    For a quick start, try the provided directory named "example".'
+echo "    example/README describes how the sample collection was prepared."
+echo
+echo "To use Flamenco, open flamenco.cgi in a web browser."
+echo

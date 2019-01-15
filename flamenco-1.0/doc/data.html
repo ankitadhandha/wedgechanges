@@ -1,0 +1,399 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+<div class=body>
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+
+</ol>
+</div>
+
+<div>
+<h3>Preparing Your Data</h3>
+<p>
+For Flamenco to load your collection,
+the metadata about the collection has to be provided
+in tab-delimited files
+(also known as TSV files, with a ".tsv" extension).
+TSV files can be easily manipulated using
+OpenOffice or Microsoft Excel.
+A sample collection,
+containing the winners of the Nobel Prize from 1901 to 2004,
+is provided in the <code class="path">example</code>
+directory of the Flamenco distribution.
+You can load this collection into Flamenco and browse it,
+and you can examine the TSV files
+in the <code class="path">example</code> directory
+to see how the data needs to be formatted.
+
+<p>
+A Flamenco collection is a set of items that are all the same kind
+(for example, all items are books, or all items are songs, and so on).
+The metadata about any given item
+consists of its <dfn>facet values</dfn> and <dfn>attribute values</dfn>.
+The first step in preparing your collection is to decide
+which information will be in facets and which will be in attributes.
+Facet values are used to organize items into categories,
+whereas attribute values are only displayed with individual items.
+
+<p>
+In the sample collection, for instance,
+<span class="facet">prize</span> is a facet
+indicating the type of Nobel Prize won,
+whereas <span class="attr">name</span> is an attribute
+for the name of the winner.
+That's because it makes sense to group Nobel Prize winners
+into categories by the type of prize, but not by their names.
+
+<p>
+Facet values are associated with ID numbers,
+whereas attribute values are strings.
+When an item belongs to a category,
+and the category belongs to a particular facet,
+the item has that category term as a value for that facet.
+"Facet value" and "category term" mean the same thing.
+For example, since Mother Teresa won the Nobel Peace Prize,
+Mother Teresa has one value in the <span class="facet">prize</span> facet,
+the <span class="facet">prize</span> category named "peace".
+The value of the <span class="attr">name</span> attribute for Mother Teresa
+is the string "Mother Teresa".
+
+<p>
+The TSV files you need to provide are:
+<ul>
+<li><code class="path">attrs.tsv</code>
+<li><code class="path">facets.tsv</code>
+<li><code class="path">items.tsv</code>
+<li><code class="path"><var>facet</var>_terms.tsv</code> (for each facet)
+<li><code class="path"><var>facet</var>_map.tsv</code> (for each facet)
+<li><code class="path">sortkeys.tsv</code> (optional)
+<li><code class="path">text.tsv</code> (optional)
+</ul>
+
+<h4>attrs.tsv</h4>
+
+<p>
+<span class="path">attrs.tsv</span> gives the list of attributes.
+Each line in this file represents one attribute.
+The tab-separated fields in the line should be as follows.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th></tr>
+<tr><td>attribute identifier</td><td>displayable name</td></tr>
+</table>
+
+<p>
+The attribute identifier should be a short, unique name
+containing only letters or underscores (no spaces or punctuation).
+The displayable name is what will be shown in the user interface.
+The example below gives three attributes.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td>name</td><td>Full Name</td></tr>
+<tr><td>birthyear</td><td>Year of Birth</td></tr>
+<tr><td>deathyear</td><td>Year of Death</td></tr>
+</table>
+
+<h4>facets.tsv</h4>
+
+<p>
+<span class="path">facets.tsv</span> gives the list of facets.
+Each line in this file represents one facet.
+The tab-separated fields in the line should be as follows.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th><th>Field 3</th></tr>
+<tr><td>facet identifier</td>
+<td>displayable name</td>
+<td>long description</td></tr>
+</table>
+
+<p>
+The facet identifier should be a short, unique name
+containing only letters or underscores.
+(Facet and attribute identifiers
+must be unique among both facets and attributes.)
+The displayable name is what will be shown in the user interface.
+The long description gives a more detailed description of the facet.
+The example below gives four facets.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td>gender</td><td>Gender</td><td>gender</td></tr>
+<tr><td>affiliation</td><td>Affiliation</td>
+<td>affiliation at the time of the award</td></tr>
+<tr><td>prize</td><td>Prize</td><td>type of the Nobel Prize won</td></tr>
+<tr><td>year</td><td>Year</td><td>year that the Nobel Prize was won</td></tr>
+</table>
+
+<h4>items.tsv</h4>
+
+<p>
+<code class="path">items.tsv</code>
+gives the IDs and attribute values for all the items.
+Each line of the file represents one item.
+If there are <var>n</var> attributes,
+then each line should have <var>n</var> + 1 fields, as follows.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th><th>Field 3</th><th>...</th><th>Field <var>n</var> + 1</tr>
+<tr><td>item identifier</td>
+<td>value for attribute 1</td>
+<td>value for attribute 2</td>
+<td>...</td>
+<td>value for attribute <var>n</var></td></tr>
+</table>
+
+<p>
+Each item must have a unique identifier, which can be any number or string.
+It's best to use identifiers that are fairly short (less than 30 characters).
+The item identifier is followed by the values for each attribute,
+in the order that the attributes were given
+in <code class="path">attrs.tsv</code>.
+The example below shows five items excerpted from a longer file,
+each with three attributes
+as given in the <code class="path">attrs.tsv</code> example above.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+<tr><td>237</td><td>Alfred Werner</td><td>1866</td><td>1919</td></tr>
+<tr><td>238</td><td>Marie Curie</td><td>1867</td><td>1934</td></tr>
+<tr><td>239</td><td>Jody Williams</td><td>1950</td><td></td></tr>
+<tr><td>240</td><td>Jack Steinberger</td><td>1921</td><td></td></tr>
+<tr><td>241</td><td>Linus Pauling</td><td>1901</td><td>1994</td></tr>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+</table>
+
+<p>
+It's fine to leave any of the attribute values blank,
+but note that each line still must have exactly <var>n</var> + 1 fields
+(that is, there must be exactly <var>n</var> tab characters).
+In this example,
+the lines for items 239 and 240 would each end in a tab character.
+
+<h4><var>facet</var>_terms.tsv</h4>
+
+<p>
+For each facet, the file named
+<code class="path"><var>facet</var>_terms.tsv</code>
+(where <var>facet</var> is the facet identifier
+as specified in the first column of <code class="path">facets.tsv</code>)
+gives the tree of category terms in the facet.
+This is the only file where each line can have a different number of fields.
+Each line represents one category,
+and gives the entire chain of ancestor categories leading down
+to that category.
+If the category is <var>d</var> levels deep,
+then the line has <var>d</var> + 1 fields.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th><th>...</th>
+<th>Field <var>d</var> - 1</th>
+<th>Field <var>d</var></th>
+<th>Field <var>d</var> + 1</tr>
+<tr>
+<td>term identifier</td>
+<td>top-level term</td>
+<td>...</td>
+<td>grandparent term</td>
+<td>parent term</td>
+<td>category term</td></tr>
+</table>
+
+<p>
+The term identifier must be a number unique within the facet.
+The tree structure is inferred by matching the category terms,
+so if two terms are subcategories of the same parent,
+make sure the parent term matches exactly.
+
+<p>
+<span class="facet">prize</span> 
+is an example of a <dfn>flat</dfn> facet
+(disjoint categories with no subcategories).
+The <code class="path">prize_terms.tsv</code> file 
+might look like this.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td>1</td><td>chemistry</td></tr>
+<tr><td>2</td><td>economics</td></tr>
+<tr><td>3</td><td>literature</td></tr>
+<tr><td>4</td><td>medicine</td></tr>
+<tr><td>5</td><td>peace</td></tr>
+<tr><td>6</td><td>physics</td></tr>
+</table>
+
+<p>
+<span class="facet">affiliation</span> 
+is a <dfn>hierarchical</dfn> facet in the sample collection,
+arranging each Nobel Prize winner's affiliated organizations
+under the cities and countries to which they belong.
+Some of the lines in the <code class="path">affiliation_terms.tsv</code> file 
+might look like this.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+<tr><td>82</td><td>Switzerland</td><td class="empty" colspan=2></td></tr>
+<tr><td>83</td><td>Switzerland</td><td>Geneva</td><td class="empty"></td></tr>
+<tr><td>84</td><td>Switzerland</td><td>Geneva</td><td>CERN</td></tr>
+<tr><td>85</td><td>Switzerland</td><td>Zurich</td><td class="empty"></td></tr>
+<tr><td>86</td><td>Switzerland</td><td>Zurich</td><td>University of Zurich</td></tr>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+</table>
+
+<p>
+As this example shows,
+categories at different levels are all distinct,
+and items can be assigned to them at any level.
+Also, two different categories can have the same category name
+as long as their parent categories are different.
+
+<p>
+Separate lines for each parent category
+(such as 82 and 83 in this example)
+are allowed but not required.
+If they are not present,
+Flamenco will automatically generate identifiers for the parent categories
+(for example, the CERN category will generate three nested categories,
+Switzerland, Geneva, and CERN).
+
+<h4><var>facet</var>_map.tsv</h4>
+
+<p>
+For each facet, the file named
+<code class="path"><var>facet</var>_terms.tsv</code>
+(where <var>facet</var> is the facet identifier
+as specified in the first column of <code class="path">facets.tsv</code>)
+assigns items to the category terms for that facet.
+Each line in this file has two fields.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th></tr>
+<tr><td>item identifier</td><td>term identifier</td></tr>
+</table>
+
+<p>
+The following example puts Alfred Werner
+in the category for the University of Zurich
+and Jack Steinberger
+in the category for CERN.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td>237</td><td>82</td></tr>
+<tr><td>237</td><td>86</td></tr>
+<tr><td>240</td><td>84</td></tr>
+</table>
+
+<p>
+The first line of this example is redundant but harmless.
+Whether or not the first line is present,
+item 237 (Alfred Werner) will automatically
+be assigned to category 82 (Switzerland),
+because Switzerland is a parent of category 86 (University of Zurich).
+The same item identifier can appear in multiple lines,
+which assigns the item to multiple categories in the facet.
+
+<h4>sortkeys.tsv</h4>
+
+<p>
+<code class="path">sortkeys.tsv</code>
+indicates which facets or attributes are to be used for sorting result lists.
+This file is optional.
+If it is present, each line corresponds to one sort key
+(either a facet or an attribute).
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th></tr>
+<tr><td>facet or attribute identifier</td><td>description</td></tr>
+</table>
+
+<p>
+The first field is the identifier of an attribute or facet,
+as given in the first column of
+<code class="path">attrs.tsv</code>
+or <code class="path">facets.tsv</code>.
+The second field is the text that will be used
+for the link that the user selects
+in order to sort by that attribute or facet.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td>name</td><td>name</td></tr>
+<tr><td>birthyear</td><td>year of birth</td></tr>
+<tr><td>country</td><td>country</td></tr>
+</table>
+
+<h4>text.tsv</h4>
+
+<p>
+<code class="path">text.tsv</code>
+supports the text search feature of Flamenco.
+This file is optional.
+If it is present, each line corresponds to one item
+and provides the searchable text for the item.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-format">
+<tr><th>Field 1</th><th>Field 2</th></tr>
+<tr><td>item identifier</td><td>searchable text keywords</td></tr>
+</table>
+
+<p>
+The following example shows some possible text keywords
+for the items in the <code class="path">items.tsv</code>
+example above.
+
+<p>
+<table cellspacing=0 cellpadding=0 class="tsv-example">
+<caption>Example</caption>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+<tr><td>237</td><td>professor chemistry molecule structure</td></tr>
+<tr><td>238</td><td>professor sorbonne polonium radium</td></tr>
+<tr><td>239</td><td>campaign to ban landmines</td></tr>
+<tr><td>240</td><td>professor neutrino muon pion</td></tr>
+<tr><td>241</td><td>professor chemistry molecule protein antibody</td></tr>
+<tr><td class="elided" colspan=4>.<br>.<br>.</td></tr>
+</table>
+
+<p>
+Searching on the term "professor" would then yield items
+237 (Alfred Werner), 238 (Marie Curie), 240 (Jack Steinberger),
+and 241 (Linus Pauling).
+
+</div>
+
+<div class="footer">
+Continue to the next section: <a href="install.html">Installing Flamenco</a>.
+</div>
+</div>

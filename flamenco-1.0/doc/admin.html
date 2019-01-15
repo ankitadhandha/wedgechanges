@@ -1,0 +1,165 @@
+<head>
+<link rel="stylesheet" href="style.css">
+<title>Flamenco</title>
+</head>
+<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
+<h2>University of California, Berkeley</h2>
+
+<div class=menu>
+Sections:
+<ol>
+<li><a href="index.html">Introduction</a>
+<li><a href="prereq.html">Prerequisites</a>
+<li><a href="data.html">Preparing Data</a>
+<li><a href="install.html">Installing</a>
+<li><a href="admin.html">Administering</a>
+<li><a href="custom.html">Customizing</a>
+<li><a href="example.html">Example</a>
+<li><a href="files.html">File Layout</a>
+<li><a href="trouble.html">Troubleshooting</a>
+
+</ol>
+</div>
+
+<div>
+<h3>Administering Flamenco</h3>
+
+<p>
+The Flamenco administration utility is a script called
+<code class="path">flamenco</code>
+located in the <code class="path"><var>target</var>/bin</code> directory,
+where <var>target</var> is the target directory
+in which you chose to install Flamenco.
+You may find it convenient to add this directory
+to your <code class="variable">PATH</code> variable
+so that you can run this utility just by typing
+<code class="command">flamenco</code>.
+(Otherwise, you will need to type the complete path to the utility:
+<code class="command"><var>target</var>/bin/flamenco</code>.)
+
+<p>
+If you use
+<code class="command">bash</code> 
+as your shell,
+adjust your <code class="variable">PATH</code> with the command:
+<blockquote><code class="command">export PATH=$PATH:<var>target</var>/bin</code>
+</blockquote>
+Put this command in your <code class="path">.bashrc</code> file
+to make this <code class="variable">PATH</code> setting apply automatically
+every time you log in.
+
+<p>
+If you use
+<code class="command">csh</code> 
+or
+<code class="command">tcsh</code> 
+as your shell,
+adjust your <code class="variable">PATH</code> with the command:
+<blockquote><code class="command">setenv PATH ${PATH}:<var>target</var>/bin</code>
+</blockquote>
+Put this command in your <code class="path">.cshrc</code>
+or <code class="path">.tcshrc</code> file
+to make this <code class="variable">PATH</code> setting apply automatically
+every time you log in.
+
+<p>
+When you give the command <code class="command">flamenco</code> by itself, 
+you'll get a menu of administration actions.
+<pre>
+Available actions are:
+    status  - list all processes and instances
+    start   - start an instance
+    stop    - stop an instance
+    restart - stop and then restart an instance
+    kill    - kill all instances (last resort, run as root)
+    import  - import a collection and create a new instance
+    index   - enable text search using Lucene instead of MySQL
+</pre>
+<p>
+The action should be given as the first argument to
+<code class="command">flamenco</code>.
+For example, type <code class="command">flamenco status</code>
+to get a list of processes and instances.
+
+<h4>Starting and Stopping Instances</h4>
+
+<p>
+The
+<code class="command">start</code>,
+<code class="command">stop</code>,
+and <code class="command">restart</code>
+actions each take at least one additional argument, an instance name.
+You can specify more than one instance name
+or the special name <code class="command">ALL</code>
+to mean all available instances.
+
+<p>
+Flamenco sets up each instance so that it starts automatically
+when it is first accessed by a Web browser.
+So, although you can use the
+<code class="command">flamenco start <var>instance</var></code>
+command to start an instance when it's convenient,
+you don't need to.
+
+<p>
+If an instance is started automatically due to a browser accessing it,
+the WebKit server process will run in the Web server user account
+(which is usually named <code class="username">www</code>,
+<code class="username">www-data</code>,
+<code class="username">apache</code>,
+or <code class="username">nobody</code>).
+If you start an instance using the 
+<code class="command">flamenco start <var>instance</var></code> command,
+the WebKit server process will run in your user account.
+
+<p>
+Regardless of how an instance was started,
+the <code class="command">flamenco stop <var>instance</var></code> command
+stops the instance.
+If you are testing changes to your customization code
+or editing the Flamenco code itself,
+you may want to use
+the <code class="command">flamenco restart <var>instance</var></code> command,
+which stops and restarts an instance.
+
+<h4>Flamenco Processes</h4>
+
+<p>
+When you're looking at a process listing,
+you can identify the WebKit server process for an instance 
+by its command line, which will look like
+<code class="command">python flamenco-<var>instance</var></code>.
+The <code class="command">flamenco status</code> command
+will list all Flamenco processes and all available instances
+and indicate which instances are running.
+
+<p>
+If something goes wrong and you cannot stop an instance normally,
+the <code class="command">flamenco kill</code> command
+will forcibly terminate all Flamenco processes that you own.
+To terminate all Flamenco processes with certainty,
+run the <code class="command">flamenco kill</code> command
+as the <code class="username">root</code> user.
+
+<h4>Managing Collections</h4>
+
+<p>
+The <code class="command">flamenco import <var>directory</var></code> command,
+as described in the <a href="install.html">installation section</a>,
+imports a collection and creates a new instance.
+
+<p>
+The <code class="command">flamenco index <var>instance</var></code> command
+builds a Lucene index of the keywords in a collection
+for the full-text search feature in Flamenco.
+Instances are initially created without a Lucene index.
+If Java is available on your machine,
+you can create a Lucene index using this command,
+after which the full-text search will use the Lucene search engine.
+
+
+</div>
+
+<div class="footer">
+Continue to the next section: <a href="custom.html">Customizing Flamenco</a>.
+</div>
