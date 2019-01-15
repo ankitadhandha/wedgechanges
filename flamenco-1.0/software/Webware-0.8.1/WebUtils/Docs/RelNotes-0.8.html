@@ -1,0 +1,32 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	<title>WebUtils 0.8 Release Notes</title>
+</head>
+
+<body>
+
+<h1>WebUtils 0.8 Release Notes</h1>
+<br>Webware for Python
+
+
+<a name=Changes><h2>Changes</h2></a>
+<ul>
+	<li> Added Funcs.normURL() which normalizes a URL cleaning up ".." and "//" occuring within the URL.  This is inspired by os.path.normpath.
+	<li> Improved error reporting on HTMLTag module.
+	<li> Improved security in Funcs htmlForDict to allow custom filtering of values to prevent credit cards and passwords from being returned. (used by WebKit.ExceptionHandler)
+
+</ul>
+
+<h2>New Features</h2>
+
+<ul>
+	<li> Added WDGValidator.validateHTML to validate the input using Web Design Group's HTML validator available at http://www.htmlhelp.com/tools/validator/  See the validateHTML doc string for more information.
+</ul>
+
+
+<p><hr>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+
+
+
+<%@ page imports = "sys,os,time,PSP.Examples.PSPExamplePage:PSPExamplePage"%> <%-- Here's the modules that I need in this file --%>
+<%@ page method="writeContent" %> <%-- This is the method of the base class that I want to override, writeHTML is the default --%>
+<%@ page extends="PSPExamplePage"%> <%--This is the base class for this page.  Page is the default --%>
+<%@ page indentType="braces" %>
+<%--
+<%@ page method="writeBody" %>
+--%>
+
+
+
+<psp:method name="title" params="">
+return "Braces Test"
+</psp:method>
+
+
+<p>
+<h1 align=center>Braces Test</h1>
+<p>
+<!--
+<table bgcolor='black' width='100%' border=0  cellspacing=0 align=center>
+<tr><td></td></tr>
+<tr><td align=center><font color='white' size=+6><b>Testing</b></font></td></tr>
+<tr><td align=center><font color='red' size=+4><b>Experimental</b></font></td></tr>
+</table>
+-->
+<p>
+<p>Dave Wallace (dwallace@delanet.com) has written a module that will convert python code that uses braces for indentation into properly whitespace indented python syntax.  This is pretty nifty, and very useful for PSP.  
+<p>  The whitespace significance in python syntax is difficult in PSP because HTML is the exact opposite.  Whitespace doesn't matter, and neither do carriage-returns or anything else.  So that makes the melding of Python and HTML a challenge.<p>
+So this is one solution.
+<p>Take out all of the whitespace significance, and just use braces.
+<p>This module allows you to use braces where you would normally be hitting &lt;return&gt;&lt;tab&gt;.  You can put the opening brace ( { ) on the line befoe the block starts, or on the first line of the block.  Same kind of deal for the closing brace ( } ). You still need to have the colon (:) on the line right before the block starts.  That's just part of python.
+<p>To enable this funtionality in PSP, you have to set braces as the indent type for your page.  So you add this directive to your PSP page:<br>
+&lt;%@ page indentType="braces" %&gt;<p>
+<p>
+<p>This is a little test of the functionality.
+<p>
+
+<% for i in range(5): { %>
+I'm number <%=i%>  <br>
+<% } %>
+
+<p>Click on ViewSource over on the left to see the source for this page.
+<p><p>
+

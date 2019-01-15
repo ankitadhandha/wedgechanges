@@ -1,0 +1,103 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<style type=text/css>
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>WebKit 0.7 Release Notes</title>
+</head>
+
+<body>
+
+<h1>WebKit 0.7 Release Notes</h1>
+Version 0.7
+<br>Webware for Python 0.7
+
+
+<a name=Introduction><h2>Introduction</h2></a>
+<ul>
+	<li> Version 0.7 was released on 3/30/2002.
+</ul>
+
+
+<h2>Major Changes</h2>
+
+<ul>
+
+	<li> *
+
+</ul>
+
+
+<h2>New Features</h2>
+
+<ul>
+	<li> A new PickleRPCServlet serves as a more convenient and efficient alternative to XMLRPCServlet. Also, a new RPCServlet base class is used by both classes and provides a starting point for other RPC protocols. The old setting 'IncludeTracebackInXMLRPCFault' is now called 'RPCExceptionReturn' and takes different values.
+
+	<li> New Application.config setting SessionPrefix can be used to prefix the session ID's with a string.  Possible values are None (don't use a prefix), "hostname" (use the hostname as the prefix), or any other string (use that string as the prefix).  Why would you want to use this?  It can be used along with some mod_rewrite magic to do simple load balancing with session affinity.
+
+	<li> New Application.config setting EmailErrorReportAsAttachment can be used to make error emails be sent at a text body with an HTML attachment, instead of the default of an HTML-only message.
+
+</ul>
+
+</ul>
+
+
+<h2>Improvements and Refinements</h2>
+
+<ul>
+
+	<li> Servlets/pages now have a new hook to participate in the building exception reports: writeExceptionReport(self, handler). See Page.writeExceptionReport() and the doc string for ExceptionHandler.py for more info.
+
+	<li> Exception reports now include the Session object and it's values.
+
+	<li> The session code is more robust to exceptions that may happen while unpickling.
+
+	<li> WebKit now properly handles files that are deleted while the app server is running, and also refuses to attempt to serve non-regular files.
+
+	<li> WebKit now tries to convince the browser to delete its session cookie when the session expires.
+
+	<li> WebKit no longer prints out a warning when a nonexistant document is requested.
+
+	<li> WebKit will no longer pass through '*' characters from the URL to Python's glob function, potentially revealing more about your site than you intended.
+
+	<li> SessionMemoryStore will no longer leave expired session files lying around on disk.
+</ul>
+
+
+
+<h2>Security</h2>
+
+<ul>
+	<li> *
+</ul>
+
+
+
+<h2>Minor API Changes</h2>
+
+We don't track every change to the interface, but here are some notables:
+
+<ul>
+	<li> Added Session.isExpired(). Mostly for use by SessionStores.
+</ul>
+
+
+<h2>Bugfixes</h2>
+
+<ul>
+
+	<li> Session.expiring() is now always called when appropriate.
+
+</ul>
+
+
+<p><hr>
+
+</body>
+</html>

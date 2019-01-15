@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Configuration Guide</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="configuration-guide">
+<h1 class="title">Configuration Guide</h1>
+<div class="contents topic" id="contents">
+<p class="topic-title"><a name="contents">Contents</a></p>
+<ul class="simple">
+<li><a class="reference" href="#command-line-configuration" id="id1" name="id1">Command Line Configuration</a></li>
+<li><a class="reference" href="#application-config" id="id2" name="id2">Application.config</a><ul>
+<li><a class="reference" href="#general-settings" id="id3" name="id3">General Settings</a></li>
+<li><a class="reference" href="#path-handling" id="id4" name="id4">Path Handling</a></li>
+<li><a class="reference" href="#caching" id="id5" name="id5">Caching</a></li>
+<li><a class="reference" href="#errors" id="id6" name="id6">Errors</a></li>
+<li><a class="reference" href="#logging" id="id7" name="id7">Logging</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#appserver-config" id="id8" name="id8">AppServer.config</a></li>
+</ul>
+</div>
+<div class="section" id="command-line-configuration">
+<h1><a class="toc-backref" href="#id1" name="command-line-configuration">Command Line Configuration</a></h1>
+<p>Each of these can be set in the <tt class="literal"><span class="pre">.config</span></tt> files, but they can be overridden with the command line.  Run <tt class="literal"><span class="pre">AppServer</span></tt> with switches in the form <tt class="literal"><span class="pre">--ClassName.SettingName=value</span></tt>, e.g. <tt class="literal"><span class="pre">--AppServer.Port=1</span></tt></p>
+<p>The <tt class="literal"><span class="pre">value</span></tt> is coerced into a Python type: if it starts with one of the characters <tt class="literal"><span class="pre">({[&quot;'</span></tt> -- i.e., parenthesis (expression), dictionary, list, or string -- then the value with be eval'ed.  If it can be turned into an integer or float, then it will be converted, otherwise it will be left as a string.  Some examples:</p>
+<ul class="simple">
+<li><tt class="literal"><span class="pre">1</span></tt> == 1</li>
+<li><tt class="literal"><span class="pre">127.0.0.1</span></tt> == &quot;127.0.0.1&quot;</li>
+<li><tt class="literal"><span class="pre">(10+2)</span></tt> == 12</li>
+<li><tt class="literal"><span class="pre">{'a':</span> <span class="pre">'b'}</span></tt> == {'a': 'b'}</li>
+<li><tt class="literal"><span class="pre">{a:</span> <span class="pre">b}</span></tt> == <em>error</em></li>
+<li><tt class="literal"><span class="pre">[1,</span> <span class="pre">'c',</span> <span class="pre">[2,</span> <span class="pre">3]]</span></tt> == [1, 'c', [2, 3]]</li>
+</ul>
+<p>Be careful about special characters in the shell.  All the characters <tt class="literal"><span class="pre">()</span> <span class="pre">[]</span> <span class="pre">'</span> <span class="pre">&quot;</span></tt> are special, and need to be quoted (with <tt class="literal"><span class="pre">\</span></tt> or with single or double quotation marks).</p>
+</div>
+<div class="section" id="application-config">
+<h1><a class="toc-backref" href="#id2" name="application-config">Application.config</a></h1>
+<p><tt class="literal"><span class="pre">Application.config</span></tt> covers not only the application, but a number
+of components that use it as a central point of configuration.</p>
+<div class="section" id="general-settings">
+<h2><a class="toc-backref" href="#id3" name="general-settings">General Settings</a></h2>
+<dl>
+<dt><tt class="literal"><span class="pre">Contexts</span></tt>:</dt>
+<dd><p class="first">This dictionary maps context names to the directory holding the
+context content. Since the default contexts all reside in WebKit,
+the paths are simple and relative. The context name appears as the
+first path component of a URL, otherwise <tt class="literal"><span class="pre">Contexts['default']</span></tt>
+is used when none is specified. When creating your own
+application, you will add a key such as <tt class="literal"><span class="pre">&quot;MyApp&quot;</span></tt> with a value
+such as <tt class="literal"><span class="pre">&quot;/home/apps/MyApp&quot;</span></tt>.  That directory will then contain
+content such as Main.py, SomeServlet.py, SomePage.psp,
+etc. <tt class="literal"><span class="pre">Webware/bin/MakeAppWorkDir.py</span></tt> will set up a context for
+your use as well.  Default:</p>
+<pre class="last literal-block">
+{
+    'default':   'Examples',
+    'Admin':     'Admin',
+    'Examples':  'Examples',
+    'Docs':      'Docs',
+    'Testing':   'Testing',
+}
+</pre>
+</dd>
+<dt><tt class="literal"><span class="pre">AdminPassword</span></tt>:</dt>
+<dd>The password that, combined with the <tt class="literal"><span class="pre">admin</span></tt> id, allows access
+to the <tt class="literal"><span class="pre">AppControl</span></tt> page of the <tt class="literal"><span class="pre">Admin</span></tt> context.  Set
+interactively when <tt class="literal"><span class="pre">install.py</span></tt> is run.  <em>No default</em>.</dd>
+<dt><tt class="literal"><span class="pre">PrintConfigAtStartUp</span></tt>:</dt>
+<dd>Print the configuration to the console when AppServer starts.</dd>
+</dl>
+</div>
+<div class="section" id="path-handling">
+<h2><a class="toc-backref" href="#id4" name="path-handling">Path Handling</a></h2>
+<p>These configuration settings control which files are exposed to users,
+which files are hidden, and some of how those files get chosen.</p>
+<dl>
+<dt><tt class="literal"><span class="pre">DirectoryFile</span></tt>:</dt>
+<dd>The list of basic filenames that WebKit searches for when serving
+up a directory. Note that the extensions are absent since WebKit
+will look for a file with any appropriate extension (<tt class="literal"><span class="pre">.py</span></tt>.,
+<tt class="literal"><span class="pre">.html</span></tt>, <tt class="literal"><span class="pre">.psp</span></tt>, etc).  Default <tt class="literal"><span class="pre">[&quot;index&quot;,</span> <span class="pre">&quot;Main&quot;]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">ExtensionsToIgnore</span></tt>:</dt>
+<dd>This is a list of extensions that WebKit will ignore when
+autodetecting extensions. Note that this does not prevent WebKit
+from serving such a file if the extension is given explicitly in a
+URL.  Default <tt class="literal"><span class="pre">['.pyc',</span> <span class="pre">'.pyo',</span> <span class="pre">'.py~',</span> <span class="pre">'.bak']</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">ExtensionsToServe</span></tt>:</dt>
+<dd>This is a list of extensions that WebKit will use exclusively when
+autodetecting extensions. Note that this does not prevent WebKit
+from serving such a file if it is named explicitly in a URL.  If
+no extensions are given all extensions will be served (usually
+anything but <tt class="literal"><span class="pre">.py</span></tt> and <tt class="literal"><span class="pre">.psp</span></tt> will be served as a static
+file).  Default: <tt class="literal"><span class="pre">[]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">UserCascadingExtensions</span></tt>:</dt>
+<dd>If false, WebKit will give a <tt class="literal"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></tt> result if there is
+more than one file that could potentially match.  If true then
+WebKit will use the <tt class="literal"><span class="pre">ExtensionCascadeOrder</span></tt> setting to determine
+which option to serve.  Default: <tt class="literal"><span class="pre">1</span></tt> (true).</dd>
+<dt><tt class="literal"><span class="pre">ExtensionCascadeOrder</span></tt>:</dt>
+<dd>A list of extensions that WebKit will choose, in order, when files
+of the same basename but different extensions are available.  Note
+that this will have no effect if the extension is given in the
+URL.  Default: <tt class="literal"><span class="pre">[&quot;.psp&quot;,</span> <span class="pre">&quot;.py&quot;,</span> <span class="pre">&quot;.html&quot;]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">FilesToHide</span></tt>:</dt>
+<dd>File patters to protect from browsing.  This affects all requests,
+and these files cannot be retrieved even when the extension is
+given explicitly.  Default: <tt class="literal"><span class="pre">[&quot;.*&quot;,</span> <span class="pre">&quot;*~&quot;,</span> <span class="pre">&quot;*bak&quot;,</span> <span class="pre">&quot;*.tmpl&quot;,</span>
+<span class="pre">&quot;*.pyc&quot;,</span> <span class="pre">&quot;*.pyo&quot;,</span> <span class="pre">&quot;*.config&quot;]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">FilesToServe</span></tt>:</dt>
+<dd>File patterns to serve from exclusively. If the file being served
+for a particulary request does not match one of these patterns an
+<tt class="literal"><span class="pre">HTTP</span> <span class="pre">403</span> <span class="pre">Forbidden</span></tt> error will be return.  This affects all
+requests, not just requests with autodetected extensions.  If set
+to <tt class="literal"><span class="pre">[]</span></tt> then no restrictions are placed.  Default: <tt class="literal"><span class="pre">[]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">SessionStore</span></tt>:</dt>
+<dd>This setting determines which of the three session stores is used
+by the application: <tt class="literal"><span class="pre">File</span></tt>, <tt class="literal"><span class="pre">Dynamic</span></tt> or <tt class="literal"><span class="pre">Memory</span></tt>. The
+<tt class="literal"><span class="pre">File</span></tt> store always gets sessions from disk and puts them back
+when finished.  <tt class="literal"><span class="pre">Memory</span></tt> always keeps all sessions in memory,
+but will periodically back them up to disk.  <tt class="literal"><span class="pre">Dynamic</span></tt> is a good
+cross between the two, which pushes excessive or inactive sessions
+out to disk.  Default: <tt class="literal"><span class="pre">Dynamic</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">SessionTimeout</span></tt>:</dt>
+<dd>Determines the amount of time (expressed in minutes) that passes
+before a user's session will timeout. When a session times out,
+all data associated with that session is lost.  Default: <tt class="literal"><span class="pre">60</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">IgnoreInvalidSession</span></tt>:</dt>
+<dd>If false, then an error message will be returned to the user if
+the user's session has timed out or doesn't exist.  If true, then
+servlets will be processed with no session data.  Default: <tt class="literal"><span class="pre">1</span></tt>
+(true).</dd>
+<dt><tt class="literal"><span class="pre">UseAutomaticPathSessions</span></tt>:</dt>
+<dd>If true, then the app server will include the session ID in the
+URL by inserting a component of the form <tt class="literal"><span class="pre">_SID_=8098302983</span></tt> into
+the URL, and will parse the URL to determine the session ID.  This
+is useful for situations where you want to use sessions, but it
+has to work even if the users can't use cookies.  If you use
+relative paths in your URLs, then you can ignore the presence of
+these sessions variables.  Default: <tt class="literal"><span class="pre">0</span></tt> (false).</dd>
+<dt><tt class="literal"><span class="pre">MaxDynamicMemorySessions</span></tt>:</dt>
+<dd>The maximum number of dynamic memory sessions that will be
+retained in memory. When this number is exceeded, the least
+recently used, excess sessions will be pushed out to disk. This
+setting can be used to help control memory requirements,
+especially for busy sites. This is used only if the
+<tt class="literal"><span class="pre">SessionStore</span></tt> is set to <tt class="literal"><span class="pre">Dynamic</span></tt>.  Default: <tt class="literal"><span class="pre">10000</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">DynamicSessionTimeout</span></tt>:</dt>
+<dd>The number of minutes of inactivity after which a session is
+pushed out to disk. This setting can be used to help control
+memory requirements, especially for busy sites. This is used only
+if the <tt class="literal"><span class="pre">SessionStore</span></tt> is set to <tt class="literal"><span class="pre">Dynamic</span></tt>.  Default: <tt class="literal"><span class="pre">15</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">SessionPrefix</span></tt>:</dt>
+<dd><p class="first">This setting can be used to prefix the session IDs with a string.
+Possible values are <tt class="literal"><span class="pre">None</span></tt> (don't use a prefix), <tt class="literal"><span class="pre">&quot;hostname&quot;</span></tt>
+(use the hostname as the prefix), or any other string (use that
+string as the prefix).  You can use this for load balancing, where
+each Webware server uses a different prefix.  You can then use
+<a class="reference" href="UserGuide.html">mod_rewrite</a> or other software for load-balancing to redirect each
+user back to the computer they first accessed.  This way the
+backend servers do not have to share session data.  Default:
+<tt class="literal"><span class="pre">None</span></tt>.  &#64;&#64; ib: need a better mod_rewrite link.</p>
+</dd>
+<dt><tt class="literal"><span class="pre">ExtraPathInfo</span></tt>:</dt>
+<dd>When enabled, this setting allows a servlet to be followed by
+additional path components which are accessible via HTTPRequest's
+<tt class="literal"><span class="pre">extraURLPath()</span></tt>. For subclassers of <tt class="literal"><span class="pre">Page</span></tt>, this would be
+<tt class="literal"><span class="pre">self.request().extraURLPath()</span></tt>.  Default: <tt class="literal"><span class="pre">0</span></tt> (false).</dd>
+<dt><tt class="literal"><span class="pre">UnknownFileTypes</span></tt>:</dt>
+<dd><p class="first">This setting controls the manner in which WebKit serves &quot;unknown
+extensions&quot; such as .html, .gif, .jpeg, etc. The default settings
+specify that the servlet matching the file be cached in memory,
+that the contents of the file be cached in memory and that the
+file timestamp to be checked on every request. This works well for
+most sites.</p>
+<p>If your site has a large amount of static files being served via
+WebKit, you should consider changing <tt class="literal"><span class="pre">&quot;CacheContent&quot;</span></tt> to 0. If
+you are confident that your static files do not get updated while
+the app server is live, then you might consider changing
+<tt class="literal"><span class="pre">&quot;CheckDate&quot;</span></tt> to <tt class="literal"><span class="pre">0</span></tt> for (slightly) better performance.  If
+you are concerned about performance, use <a class="reference" href="UserGuide.html">mod_rewrite</a> to avoid
+accessing WebKit for static content. &#64;&#64; ib: link to mod_rewrite</p>
+<p>The <tt class="literal"><span class="pre">Technique</span></tt> setting can be switch to
+<tt class="literal"><span class="pre">&quot;redirectSansAdapter&quot;</span></tt>, but this is an experimental setting
+with some known problems.  Default:</p>
+<pre class="last literal-block">
+{
+    'ReuseServlets': 1,
+
+    # Technique choices:
+    # serveContent, redirectSansAdapter
+    'Technique': 'serveContent',
+
+    # If serving content:
+    'CacheContent': 1,  # set to 0 to reduce memory use
+    'CheckDate':    1,
+}
+</pre>
+</dd>
+</dl>
+</div>
+<div class="section" id="caching">
+<h2><a class="toc-backref" href="#id5" name="caching">Caching</a></h2>
+<dl>
+<dt><tt class="literal"><span class="pre">CacheServletClasses</span></tt>:</dt>
+<dd>When set to zero, the AppServer will not cache the classes that
+are loaded for servlets. This is for development and debugging.
+You usually do not need this, as servlet modules are reloaded if
+the file is changed.  Default <tt class="literal"><span class="pre">1</span></tt> (true/caching on).</dd>
+<dt><tt class="literal"><span class="pre">CacheServletInstances</span></tt>:</dt>
+<dd>When set to zero, the app server will not cache the instances that
+are created for servlets. This is for development and debugging.
+You usually do not need this, as servlet modules are reloaded and
+cached instances purged when the servlet file changes.  Default
+<tt class="literal"><span class="pre">1</span></tt> (true/caching on).</dd>
+<dt><tt class="literal"><span class="pre">ClearPSPCacheOnStart</span></tt>:</dt>
+<dd>When set to zero, the app server will allow PSP instances to
+persist from one AppServer run to the next.  If you have PSPs that
+take a long time to compile, this can give a speedup.  Default:
+<tt class="literal"><span class="pre">1</span></tt> (true/caching does not persist)</dd>
+</dl>
+</div>
+<div class="section" id="errors">
+<h2><a class="toc-backref" href="#id6" name="errors">Errors</a></h2>
+<dl>
+<dt><tt class="literal"><span class="pre">ShowDebugInfoOnErrors</span></tt>:</dt>
+<dd>If true, then uncaught exceptions will not only display a message
+for the user, but debugging information for the developer as
+well. This includes the traceback, HTTP headers, form fields,
+environment and process ids. You will most likely want to turn
+this off when deploying the site for users.  Default <tt class="literal"><span class="pre">1</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">IncludeFancyTraceback</span></tt>:</dt>
+<dd><p class="first">If true, then display a fancy, detailed traceback at the end of
+the error page.  It will include the values of local variables in
+the traceback.  This makes use of a modified version of
+<tt class="literal"><span class="pre">cgitb.py</span></tt> which is included with Webware.  The <a class="reference" href="http://web.lfw.org/python/">original
+version</a> was written by Ka-Ping Yee.  Default <tt class="literal"><span class="pre">0</span></tt> (off).</p>
+</dd>
+<dt><tt class="literal"><span class="pre">FancyTracebackContext</span></tt>:</dt>
+<dd>The number of lines of source code context to show if
+IncludeFancyTraceback is turned on.  Default: <tt class="literal"><span class="pre">5</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">UserErrorMessage</span></tt>:</dt>
+<dd>This is the error message that is displayed to the user when an
+uncaught exception escapes a servlet.  Default: <tt class="literal"><span class="pre">&quot;The</span> <span class="pre">site</span> <span class="pre">is</span>
+<span class="pre">having</span> <span class="pre">technical</span> <span class="pre">difficulties</span> <span class="pre">with</span> <span class="pre">this</span> <span class="pre">page.</span> <span class="pre">An</span> <span class="pre">error</span> <span class="pre">has</span> <span class="pre">been</span>
+<span class="pre">logged,</span> <span class="pre">and</span> <span class="pre">the</span> <span class="pre">problem</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">fixed</span> <span class="pre">as</span> <span class="pre">soon</span> <span class="pre">as</span>
+<span class="pre">possible.</span> <span class="pre">Sorry!&quot;</span></tt></dd>
+<dt><tt class="literal"><span class="pre">ErrorLogFilename</span></tt>:</dt>
+<dd>The name of the file where exceptions are logged. Each entry
+contains the date and time, filename, pathname, exception name and
+data, and the HTML error message filename (assuming there is one).
+Default: <tt class="literal"><span class="pre">Logs/Errors.csv</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">SaveErrorMessages</span></tt>:</dt>
+<dd>If true, then errors (e.g., uncaught exceptions) will produce an
+HTML file with both the user message and debugging
+information. Developers/administrators can view these files after
+the fact, to see the details of what went wrong.  These error
+messages can take a surprising amount of space.  Default: <tt class="literal"><span class="pre">1</span></tt>
+(true/do save).</dd>
+<dt><tt class="literal"><span class="pre">ErrorMessagesDir</span></tt>:</dt>
+<dd>This is the name of the directory where HTML error messages get
+stored.  Default: <tt class="literal"><span class="pre">ErrorMsgs</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">EmailErrors</span></tt>:</dt>
+<dd>If true, error messages are e-mailed out according to the
+ErrorEmailServer and ErrorEmailHeaders settings. You must also set
+<tt class="literal"><span class="pre">ErrorEmailServer</span></tt> and <tt class="literal"><span class="pre">ErrorEmailHeaders</span></tt>.  Default: <tt class="literal"><span class="pre">0</span></tt>
+(false/do not email).</dd>
+<dt><tt class="literal"><span class="pre">EmailErrorReportAsAttachment</span></tt>:</dt>
+<dd>1 to make html error reports be emailed as text with an html
+attachment, or 0 to make the html the body of the message.
+Default <tt class="literal"><span class="pre">0</span></tt> (false/html in body).</dd>
+<dt><tt class="literal"><span class="pre">ErrorEmailServer</span></tt>:</dt>
+<dd>The SMTP server to use for sending e-mail error messages.
+Default: <tt class="literal"><span class="pre">&quot;mail.-.com&quot;</span></tt> (i.e., unset)</dd>
+<dt><tt class="literal"><span class="pre">ErrorEmailHeaders</span></tt>:</dt>
+<dd><p class="first">The e-mail headers used for e-mailing error messages. Be sure to
+configure <tt class="literal"><span class="pre">&quot;From&quot;</span></tt>, <tt class="literal"><span class="pre">&quot;To&quot;</span></tt> and <tt class="literal"><span class="pre">&quot;Reply-to&quot;</span></tt> before turning
+<tt class="literal"><span class="pre">EmailErrors</span></tt> on.  Default:</p>
+<pre class="last literal-block">
+{
+    'From':         '-&#64;-.com',
+    'To':           ['-&#64;-.com'],
+    'Reply-to':     '-&#64;-.com',
+    'Content-type': 'text/html',
+    'Subject':      'Error'
+}
+</pre>
+</dd>
+<dt><tt class="literal"><span class="pre">MaxValueLengthInExceptionReport</span></tt>:</dt>
+<dd>Values in exception reports are truncated to this length, to avoid
+excessively long exception reports.  Set this to <tt class="literal"><span class="pre">None</span></tt> if you
+don't want any truncation.  Default: <tt class="literal"><span class="pre">500</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">RPCExceptionReturn</span></tt>:</dt>
+<dd>Determines how much detail an RPC servlet will return when an
+exception occurs on the server side. Can take the values, in order
+of increasing detail, <tt class="literal"><span class="pre">&quot;occurred&quot;</span></tt>, <tt class="literal"><span class="pre">&quot;exception&quot;</span></tt> and
+<tt class="literal"><span class="pre">&quot;traceback&quot;</span></tt>. The first reports the string <tt class="literal"><span class="pre">&quot;unhandled</span>
+<span class="pre">exception</span></tt>&quot;, the second prints the actual exception, and the
+third prints both the exception and accompanying traceback. All
+returns are always strings.  Default: <tt class="literal"><span class="pre">&quot;traceback&quot;</span></tt></dd>
+<dt><tt class="literal"><span class="pre">ReportRPCExceptionsInWebKit</span></tt>:</dt>
+<dd><tt class="literal"><span class="pre">1</span></tt> means report exceptions in RPC servlets in the same way as
+exceptions in other servlets, i.e. in the logfiles, the error log,
+and/or by email.  <tt class="literal"><span class="pre">0</span></tt> means don't report the exceptions on the
+server side at all; this is useful if your RPC servlets are
+raising exceptions by design and you don't want to be notified.
+Default: <tt class="literal"><span class="pre">1</span></tt> (true/do report exceptions).</dd>
+</dl>
+</div>
+<div class="section" id="logging">
+<h2><a class="toc-backref" href="#id7" name="logging">Logging</a></h2>
+<dl>
+<dt><tt class="literal"><span class="pre">LogActivity</span></tt>:</dt>
+<dd>If true, then the execution of each servlet is logged with useful
+information such as time, duration and whether or not an error
+occurred.  Default: <tt class="literal"><span class="pre">1</span></tt> (true).</dd>
+<dt><tt class="literal"><span class="pre">ActivityLogFilenames</span></tt>:</dt>
+<dd>This is the name of the file that servlet executions are logged
+to. This setting has no effect if <tt class="literal"><span class="pre">LogActivity</span></tt> is 0. The path
+can be relative to the WebKit location, or an absolute path.
+Default: <tt class="literal"><span class="pre">&quot;Logs/Activity.csv&quot;</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">ActivityLogColumns</span></tt>:</dt>
+<dd>Specifies the columns that will be stored in the activity
+log. Each column can refer to an object from the set:
+[application, transaction, request, response, servlet, session]
+and then refer to its attributes using &quot;dot notation&quot;. The
+attributes can be methods or instance attributes and can be
+qualified arbitrarily deep.  Default: <tt class="literal"><span class="pre">['request.remoteAddress',</span>
+<span class="pre">'request.method',</span> <span class="pre">'request.uri',</span> <span class="pre">'response.size',</span> <span class="pre">'servlet.name',</span>
+<span class="pre">'request.timeStamp',</span> <span class="pre">'transaction.duration',</span>
+<span class="pre">'transaction.errorOccurred']</span></tt>.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="appserver-config">
+<h1><a class="toc-backref" href="#id8" name="appserver-config">AppServer.config</a></h1>
+<dl>
+<dt><tt class="literal"><span class="pre">Host</span></tt>:</dt>
+<dd>The host the server runs on.  There is little reason to change
+this unless you have a machine with multiple network interfaces,
+and you don't want Webware to listen on all interfaces.  
+Default <tt class="literal"><span class="pre">127.0.0.1</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">Port</span></tt>:</dt>
+<dd>The port the application server listens to for requests from the
+adapter.  You cannot point a browser to this port.  You may wish
+to change this if you have another application running at this
+port, or if you are running more than one AppServer they must each
+be listening at a different port.  Default: <tt class="literal"><span class="pre">8086</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">PluginDirs</span></tt>:</dt>
+<dd><p class="first">When the application server starts up, it looks in these locations
+for plugins.  Each plugin is a subdirectory of its own.  By
+default WebKit looks in the <tt class="literal"><span class="pre">Webware/</span></tt> directory (<tt class="literal"><span class="pre">..</span></tt>) for
+plugins -- several of which are shipped with Webware.  Default
+<tt class="literal"><span class="pre">[&quot;..&quot;]</span></tt>.  See <a class="reference" href="Developing.html#creatingplugins">Creating Plugins</a> for information on creating
+your own plug-ins. &#64;&#64; ib: are these really differently cased?</p>
+<p class="last">The advantage of a plug-in directory is that you can add new
+plug-ins to the app server simply by dropping them into the
+directory; no additional configuration is necessary.</p>
+</dd>
+<dt><tt class="literal"><span class="pre">PlugIns</span></tt>:</dt>
+<dd>Loads the plug-ins from the given locations when starting the
+AppServer.  You must add a directory to the list for every plug-in
+you use -- <tt class="literal"><span class="pre">PlugInDirs</span></tt> is usually easier.  Default <tt class="literal"><span class="pre">[]</span></tt>.</dd>
+<dt><tt class="literal"><span class="pre">PrintConfigAtStartUp</span></tt>:</dt>
+<dd>Prints configuration to console at startup.  Default <tt class="literal"><span class="pre">1</span></tt> (true).</dd>
+<dt><tt class="literal"><span class="pre">Verbose</span></tt>:</dt>
+<dd>If true, then additional messages are printed while the AppServer
+runs, most notably information about each request such as size and
+response time.  Default <tt class="literal"><span class="pre">1</span></tt> (true).</dd>
+<dt><tt class="literal"><span class="pre">ServerThreads</span></tt>: </dt>
+<dd>The maximum number of threads in the request handler thread pool,
+and therefore, the maximum number of concurrent requests that can
+be served. Unless you have a serious load on a high end machine,
+the default is generally sufficient.  Default <tt class="literal"><span class="pre">10</span></tt>.  &#64;&#64; ib: I
+don't believe this is correct -- I think more threads are
+created on demand, but only this many threads sit around waiting.</dd>
+<dt><tt class="literal"><span class="pre">CheckInterval</span></tt>:</dt>
+<dd>The number of virtual instructions after which Python will check
+for thread switches, signal handlers, etc. This is passed directly
+to <tt class="literal"><span class="pre">sys.setcheckinterval()</span></tt>. Benchmarks have shown 100 to give a
+worthwhile performance boost with higher values resulting in
+little gain.  Default <tt class="literal"><span class="pre">100</span></tt>.</dd>
+</dl>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+# TestCases.data
+
+# This file is used by Testing/Main.py
+# Each line describes a test case.
+# Lines that are blank or begin with '#' are ignored.
+
+
+# Good URLs
+/                      --> Show /Examples/Welcome
+/Welcome               --> "
+/Examples/Welcome      --> "
+/Examples/             --> "
+/Admin/                --> Show admin pages
+/Testing/Dir/File.html --> Display the file
+/Examples/Welcome.py   --> Display the file
+
+# Redirects
+                       --> Redirect to /
+/Admin                 --> Redirect to /Admin/
+/Examples              --> Redirect to /Examples/
+
+# Combo cases
+/Testing/Dir \
+/Testing/Dir/File.html --> display
+
+/Examples \
+/Examples/Welcome \
+/Examples/Welcome     --> shows the Welcome page each time
+
+# Bad: Slashes after files
+/Welcome/              --> Error: 404 Not found
+/Examples/Welcome/     --> "
+
+# Bad: Unknown URLs
+/BadURL \ 
+/BadURL/ \
+/Examples/BadURL \
+/Examples/BadURL/ \
+/Examples/BadURL/MoreBad --> 404 Not Found<br>or if ExtraPathInfo is set,<br>then the Examples/Welcome<br> page with extraURLPath<br> information displayed.
+/File.badext --> "
+/Examples/File.badext  --> "
+
+# Embedded Servlets
+/Testing/Servlet/Extra/Path/Info  \
+/Testing/Servlet/Extra/Path/Info/ --> Only when ExtraPathInfo=1,<br>otherwise 404.
+
+/Testing/IncludeURLTest --> shows includeURL test.
+/Testing/Dir/IncludeURLTest2 --> shows lower level includeURL test.
+
+/Testing/Forward1 --> Forward1Target
+/Testing/Forward2 --> Dir/Forward2Target
+/Testing/Dir/Forward3 --> Forward3Target

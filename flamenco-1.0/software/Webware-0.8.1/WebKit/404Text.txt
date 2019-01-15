@@ -1,0 +1,9 @@
+<body bgcolor="white">
+<h1>404 Error</h1>
+<p>
+<h2>Page Not Available On This Server</h2>
+<p>
+The page you requested, <b>%s</b>, was not found on this server.
+<hr>
+Webware Webkit Application Server
+</body>

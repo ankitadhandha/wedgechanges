@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>Beginner Tutorial</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="beginner-tutorial">
+<h1 class="title">Beginner Tutorial</h1>
+<p>Version 0.8.1, Webware for Python</p>
+<div class="contents topic" id="contents">
+<p class="topic-title"><a name="contents">Contents</a></p>
+<ul class="simple">
+<li><a class="reference" href="#synopsis" id="id1" name="id1">Synopsis</a></li>
+<li><a class="reference" href="#installation" id="id2" name="id2">Installation</a></li>
+<li><a class="reference" href="#setting-up-your-environment" id="id3" name="id3">Setting Up Your Environment</a><ul>
+<li><a class="reference" href="#creating-a-working-directory" id="id4" name="id4">Creating a Working Directory</a></li>
+<li><a class="reference" href="#changing-webware-configuration" id="id5" name="id5">Changing Webware Configuration</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#creating-and-understanding-the-servlet" id="id6" name="id6">Creating and Understanding the Servlet</a></li>
+<li><a class="reference" href="#a-brief-introduction-to-the-servlet" id="id7" name="id7">A Brief Introduction to the Servlet</a></li>
+<li><a class="reference" href="#a-photo-album" id="id8" name="id8">A Photo Album</a><ul>
+<li><a class="reference" href="#iteration-1-displaying-files" id="id9" name="id9">Iteration 1: Displaying Files</a></li>
+<li><a class="reference" href="#iteration-2-uploading-files" id="id10" name="id10">Iteration 2: Uploading Files</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="synopsis">
+<h1><a class="toc-backref" href="#id1" name="synopsis">Synopsis</a></h1>
+<p>We present a tutorial on making a Webware script, and some guidance on turning that into a web application.</p>
+</div>
+<div class="section" id="installation">
+<h1><a class="toc-backref" href="#id2" name="installation">Installation</a></h1>
+<p>This document does not cover the basic installation.  See the <a class="reference" href="InstallGuide.html">Install Guide</a>
+-- you should be able to open up the Examples context in Webware before you continue.</p>
+</div>
+<div class="section" id="setting-up-your-environment">
+<h1><a class="toc-backref" href="#id3" name="setting-up-your-environment">Setting Up Your Environment</a></h1>
+<div class="section" id="creating-a-working-directory">
+<h2><a class="toc-backref" href="#id4" name="creating-a-working-directory">Creating a Working Directory</a></h2>
+<p>We'll first set up a directory dedicated to your application.  Run this command:</p>
+<pre class="literal-block">
+$ cd ~
+$ python /path/to/Webware/bin/MakeAppWorkDir.py -l --cvsignore \
+  -c context WebwareTest
+</pre>
+<p>You'll now have a directory WebwareTest in your home directory (or of course you can put it in some other location).  Inside this directory will be several subdirectories and a couple files.  The only file we'll worry about is <tt class="literal"><span class="pre">AppServer</span></tt> (or <tt class="literal"><span class="pre">AppServer.bat</span></tt> if you're on Windows).  The directories of interest are <tt class="literal"><span class="pre">context</span></tt> (that you specified with <tt class="literal"><span class="pre">-c</span> <span class="pre">context</span></tt>) where you'll be putting your servlets; <tt class="literal"><span class="pre">Configs</span></tt> that holds some configuration files; and <tt class="literal"><span class="pre">lib</span></tt> where you can put your non-servlet code.</p>
+<p>For more information about the working directory and setting up the file structure for your application, see <a class="reference" href="ApplicationDevelopment.html">Application Development</a>.</p>
+</div>
+<div class="section" id="changing-webware-configuration">
+<h2><a class="toc-backref" href="#id5" name="changing-webware-configuration">Changing Webware Configuration</a></h2>
+<p>For the most part the configuration is fine, but we'll make a couple changes to make it easier to develop.  For more information on configuration see the <a class="reference" href="Configuration.html">Configuration Guide</a>.</p>
+<p>In the file <tt class="literal"><span class="pre">AppServer.config</span></tt>, change this line:</p>
+<pre class="literal-block">
+# Original (default setting):
+    'AutoReload': 0,
+# To:
+    'AutoReload': 1,
+</pre>
+<p>This will cause the AppServer to restart if any loaded files are changed -- without this you may edit a file and your application won't see the updated version until you manually restart the AppServer.</p>
+<p>The other change you may want to make to allow you to use more interesting URLs.  In Application.config:</p>
+<pre class="literal-block">
+# Original (default setting):
+    'ExtraPathInfo': 0,
+# To:
+    'ExtraPathInfo': 1,
+</pre>
+<p>Otherwise the settings should be appropriate for development.  (There are several you would want to change before deploying the application in a production environment).</p>
+</div>
+</div>
+<div class="section" id="creating-and-understanding-the-servlet">
+<h1><a class="toc-backref" href="#id6" name="creating-and-understanding-the-servlet">Creating and Understanding the Servlet</a></h1>
+<p>Webware's core concept for serving pages is the <em>servlet</em>.  This is a class that creates a response given a request.</p>
+<p>The core classes to understanding the servlet are <tt class="literal"><span class="pre">Servlet</span></tt>, <tt class="literal"><span class="pre">HTTPServlet</span></tt>, and <tt class="literal"><span class="pre">Page</span></tt>.  Also of interest would be the request (<tt class="literal"><span class="pre">Request</span></tt> and <tt class="literal"><span class="pre">HTTPRequest</span></tt>) and the response (<tt class="literal"><span class="pre">Response</span></tt> and <tt class="literal"><span class="pre">HTTPResponse</span></tt>) -- the <tt class="literal"><span class="pre">HTTP-</span></tt> versions of these classes are more interesting.  There is also a <tt class="literal"><span class="pre">Transaction</span></tt> object, which is solely a container for the request and response.</p>
+<p>While there are several levels you can work on while creating your servlet, in this tutorial we will work solely with subclassing the <tt class="literal"><span class="pre">Page</span></tt> class.  This class defines a more high-level interface, appropriate for generating HTML (though it can be used with any content type).  It also provides a number of convenience methods.</p>
+</div>
+<div class="section" id="a-brief-introduction-to-the-servlet">
+<h1><a class="toc-backref" href="#id7" name="a-brief-introduction-to-the-servlet">A Brief Introduction to the Servlet</a></h1>
+<p>Each servlet is a plain Python class.  There is no Webware magic (except perhaps for the level one <em>import module based on URL</em> spell).  PSP has more magic, but that's a topic for another day. (&#64;&#64; ib: link to PSP doc)  An extremely simple servlet might look like:</p>
+<pre class="literal-block">
+from WebKit.Page import Page
+
+class MyServlet(Page):
+
+    def title(self):
+        return 'My Sample Servlet'
+        
+    def writeContent(self):
+        self.write('Hello world!')
+</pre>
+<p>This would be placed in <tt class="literal"><span class="pre">MyServlet.py</span></tt>.  Webware will create a pool of <tt class="literal"><span class="pre">MyServlet</span></tt> instances, which will be reused.  Servlets &quot;write&quot; the text of the response (like <tt class="literal"><span class="pre">self.write(&quot;some</span> <span class="pre">text&quot;)</span></tt>).  Webware calls the servlet like this:</p>
+<ul class="simple">
+<li>An unused servlet is taken from the pool, or another servlet is created.</li>
+<li><tt class="literal"><span class="pre">awake(transaction)</span></tt> is called.  This is a good place to set up data
+for your servlet.  You can put information in instance variables for use later
+on.  But be warned -- those instance variables will hang around potentially
+for a long time if you don't delete them later (in <tt class="literal"><span class="pre">sleep</span></tt>).</li>
+<li>Several low-level methods are called, which Page isolates you from.  We will
+ignore these.</li>
+<li><tt class="literal"><span class="pre">writeHTML()</span></tt> is called.  <tt class="literal"><span class="pre">Page</span></tt> implements this just fine, but you
+can override it if you want total control, or if you want to output something
+other than HTML.</li>
+<li><tt class="literal"><span class="pre">writeDocType()</span></tt> would write something like <tt class="literal"><span class="pre">&lt;!DOCTYPE</span> <span class="pre">HTML</span> <span class="pre">PUBLIC</span> 
+<span class="pre">&quot;-//W3C//DTD</span> <span class="pre">HTML</span> <span class="pre">4.01</span> <span class="pre">Transitional//EN&quot;</span>&nbsp;&nbsp; 
+<span class="pre">&quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</span></tt></li>
+<li>The &lt;head&gt; section of the page is written.  <tt class="literal"><span class="pre">title()</span></tt> gives the title, and
+you probably want to override it.</li>
+<li><tt class="literal"><span class="pre">writeStyleSheet()</span></tt> is called, if you want to write that or anything else in
+the &lt;head&gt; section.</li>
+<li>The &lt;body&gt; tag is written.  Have <tt class="literal"><span class="pre">htBodyArgs()</span></tt> return anything you want in
+the &lt;body&gt; tag (like <tt class="literal"><span class="pre">onLoad=&quot;loadImages()&quot;</span></tt>)</li>
+<li><tt class="literal"><span class="pre">writeBodyParts()</span></tt> is called, which you may want to override if you want
+to create a template for other servlets.</li>
+<li><tt class="literal"><span class="pre">writeContent()</span></tt> should write the main content for the page.  This is where
+you do most of your display work.</li>
+<li>The response is packaged up, the headers put on the front, cookies handled,
+and it's sent to the browser.  This is all done for you.</li>
+<li><tt class="literal"><span class="pre">sleep(transaction)</span></tt> is called.  This is where you should clean up anything
+you might have set up earlier -- open files, open database connections, etc.
+Often it's empty.</li>
+<li>The servlet is placed back into the pool, to be used again.  This only happens
+after the transaction is complete -- the servlet won't get reused any earlier.</li>
+</ul>
+<p>You only have to override the portions that you want to.  It is not uncommon to only override the <tt class="literal"><span class="pre">writeContent()</span></tt> method in a servlet, for instance.</p>
+<p>You'll notice a file <tt class="literal"><span class="pre">context/Main.py</span></tt> in your working directory.  You can look at it to get a feel for what a servlet might look like.  (As an aside, a servlet called <tt class="literal"><span class="pre">Main</span></tt> or <tt class="literal"><span class="pre">index</span></tt> will be used analogous to the <tt class="literal"><span class="pre">index.html</span></tt> file).  You can look at it for a place to start experimenting, but here we'll work on developing an entire (small) application, introducing the other concepts as we go along.</p>
+</div>
+<div class="section" id="a-photo-album">
+<h1><a class="toc-backref" href="#id8" name="a-photo-album">A Photo Album</a></h1>
+<p>If you look online, you'll see a huge number of web applications available for an online photo album.  The world needs one more!</p>
+<p>You will need the Python Imaging Library (&#64;&#64; ib: link) installed for this example.  First we'll use it to find the sizes of the images, and later we will use it to create thumbnails.</p>
+<p>We'll develop the application in iterations -- the iterations are numbered in <tt class="literal"><span class="pre">WebKit/Examples/PhotoAlbum/VersionX</span></tt>.</p>
+<div class="section" id="iteration-1-displaying-files">
+<h2><a class="toc-backref" href="#id9" name="iteration-1-displaying-files">Iteration 1: Displaying Files</a></h2>
+<p>For the first iteration, we'll display files that you upload by hand.  We do this with two servlets -- one to show the entire album, and another for individual pictures.  First, the entire album:</p>
+<pre class="literal-block">
+from WebKit.Page import Page
+import os
+import Image
+from urllib import quote as urlEncode
+dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), &quot;pics&quot;)
+
+class Main(Page):
+
+    def title(self):
+        # It's nice to give a real title, otherwise &quot;Main&quot; would
+        # be used.
+        return 'Photo Album'
+
+    def writeContent(self):
+        # We'll format these simpy, one thumbnail per line.
+        for filename in os.listdir(dir):
+            im = Image.open(os.path.join(dir, filename))
+            x, y = im.size
+            # Here we figure out the scaled-down size of the image,
+            # so that we preserve the aspect ratio.  We'll use fake
+            # thumbnails, where the image is scaled down by the browser.
+            x = int(x * (100.0 / y))
+            y = 100
+            # note that we are just using % substitution to generate
+            # the HTML.  There's other ways, but this works well enough.
+            # We're linking to the View servlet which we'll show later.
+            # Notice we use urlEncode -- otherwise we'll encounter bugs
+            # if there's a file with an embedded space or other character
+            # in it.
+            self.write('&lt;p&gt;&lt;a href=&quot;View?filename=%s&quot;&gt;'
+                       % urlEncode(filename))
+            self.write('&lt;img src=&quot;../pics/%s&quot; width=&quot;%i&quot; height=&quot;%i&quot;&gt;'
+                       % (urlEncode(filename), x, y))
+            self.write('&lt;/a&gt;&lt;/p&gt;\n')
+</pre>
+<p>The servlet <tt class="literal"><span class="pre">View</span></tt> takes one URL parameter of <tt class="literal"><span class="pre">filename</span></tt> -- you can get the value of a URL parameter like <tt class="literal"><span class="pre">self.request().field('filename')</span></tt> -- or, if you want a default value, you can use <tt class="literal"><span class="pre">self.request().field('filename',</span> <span class="pre">defaultValue)</span></tt>.  In the likely case you don't want to write <tt class="literal"><span class="pre">self.request()</span></tt> before retrieving each value, do:</p>
+<pre class="literal-block">
+req = self.request()
+self.write(req.field('username'))
+
+# Even more compactly:
+field = self.request().field
+self.write(field('username'))
+</pre>
+<p>The individual images are viewed with this servlet:</p>
+<pre class="literal-block">
+from WebKit.Page import Page
+import os
+import Image
+from urllib import quote as urlEncode
+dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), &quot;pics&quot;)
+
+class View(Page):
+
+    def title(self):
+        return 'View: %s' \
+               % self.htmlEncode(self.request().field('filename'))
+        
+    def writeContent(self):
+        filename = self.request().field('filename')
+        im = Image.open(os.path.join(dir, filename))
+        self.write('&lt;center&gt;')
+        self.write('&lt;img src=&quot;../pics/%s&quot; width=&quot;%i&quot; height=&quot;%i&quot;&gt;'
+                   % (self.urlEncode(filename), im.size[0], im.size[1]))
+        self.write('&lt;br&gt;\n')
+        self.write(filename)
+        self.write('&lt;p&gt;\n')
+        self.write('&lt;a href=&quot;./&quot;&gt;Return to Index&lt;/a&gt;')
+        self.write('&lt;/center&gt;')
+</pre>
+</div>
+<div class="section" id="iteration-2-uploading-files">
+<h2><a class="toc-backref" href="#id10" name="iteration-2-uploading-files">Iteration 2: Uploading Files</a></h2>
+<p>That was fairly simple -- but usually you want to upload files, potentially through a web interface.  Along the way we'll add thumbnail generation using PIL, and slighly improve the image index.</p>
+<p>We'll generate thumbnails kind of on demand, so you can still upload files manually -- thumbnails will be put in <tt class="literal"><span class="pre">pics/thumbs/</span></tt> and have <tt class="literal"><span class="pre">-tn</span></tt> appended just to avoid confusion:</p>
+<pre class="literal-block">
+from WebKit.Page import Page
+import os
+import Image
+from urllib import quote as urlEncode
+dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), &quot;pics&quot;)
+
+class Main(Page):
+
+    def title(self):
+        # It's nice to give a real title, otherwise &quot;Main&quot; would
+        # be used.
+        return 'Photo Album'
+
+    def writeContent(self):
+        # We'll format these in a table, two columns wide
+        self.write('&lt;table width=&quot;100%&quot;&gt;\n')
+        # col will be 0 or 1, depending if we're on the left or
+        # right column.
+        col = 0
+        filenames = os.listdir(dir)
+        # We'll sort the files, case-insensitive
+        filenames.sort(lambda a, b: cmp(a.lower(), b.lower()))
+        for filename in filenames:
+        
+            if not col: # right column
+                self.write('&lt;tr&gt;')
+            
+            thumbFilename = os.path.splitext(filename)[0] + &quot;-tn.jp&quot;
+            if not os.path.exists(os.path.join(dir, &quot;thumbs&quot;,
+                                  thumbFilename)):
+                # No thumnail exists -- we have to generate one
+                im = Image.open(os.path.join(dir, filename))
+                im.thumbnail((250, 100))
+                # &#64;&#64; ib: handle GIFs
+                im.save(os.path.join(dir, &quot;thumbs&quot;, thumbFilename))
+            else:
+                im = Image.open(os.path.join(dir, &quot;thumbs&quot;, thumbFilename))
+            # note that we are just using % substitution to generate
+            # the HTML.  There's other ways, but this works well enough.
+            # We're linking to the View servlet which we'll show later.
+            # Notice we use urlEncode -- otherwise we'll encounter bugs
+            # if there's a file with an embedded space or other character
+            # in it.
+            self.write('&lt;td&gt;&lt;a href=&quot;View?filename=%s&quot;&gt;'
+                       % urlEncode(filename))
+            self.write('&lt;img src=&quot;../pics/%s&quot; width=&quot;%i&quot; height=&quot;%i&quot;&gt;'
+                       % (urlEncode(filename), im.size[0], im.size[1]))
+            self.write('&lt;br&gt;Filename: %s&lt;br&gt;Size: %i'
+                       % (self.htmlEncode(filename), 
+                          os.stat(os.path.join(dir, filename)).st_size))
+            self.write('&lt;/a&gt;&lt;/td&gt;\n')
+
+            if col:
+                self.write('&lt;/tr&gt;\n')
+            col = not col
+            
+        self.write('&lt;/table&gt;&lt;p&gt;\n')
+        self.write('&lt;center&gt;&lt;a href=&quot;Upload&quot;&gt;Upload an image&lt;/a&gt;&lt;/center&gt;')
+</pre>
+<p>The <tt class="literal"><span class="pre">View</span></tt> servlet we'll leave just like it was.  We'll add an <tt class="literal"><span class="pre">Upload</span></tt> servlet.  Notice we use <tt class="literal"><span class="pre">enctype=&quot;form/multi-part&quot;</span></tt> in the <tt class="literal"><span class="pre">&lt;form&gt;</span></tt> tag -- this is an HTMLism for file uploading (otherwise you'll just get the filename and not the file contents).  We also add a hidden field <tt class="literal"><span class="pre">doUpload</span></tt> which tells us that the form has been submitted.  Finally when the form is finished we redirect them to the viewing page (<tt class="literal"><span class="pre">self.response().sendRedirect(url)</span></tt>):</p>
+<pre class="literal-block">
+from WebKit.Page import Page
+from urllib import quote as urlEncode
+dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), &quot;pics&quot;)
+
+class Upload(Page):
+
+    def writeContent(self):
+        if self.request().field('doUpload', 0):
+            self.doUpload()
+            return
+            
+        self.write('''
+        Upload your image:&lt;br&gt;
+        &lt;form action=&quot;Upload&quot; method=&quot;POST&quot; enctype=&quot;form/multi-part&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;doUpload&quot; value=&quot;yes&quot;&gt;
+        &lt;input type=&quot;file&quot; name=&quot;imageFile&quot;&gt;
+        &lt;input type=&quot;submit&quot; value=&quot;Upload&quot;&gt;
+        &lt;/form&gt;
+        ''')
+        
+    def doUpload(self):
+        file = self.request().field('imageFile')
+        # Because it's a file upload, we don't get a string back.
+        # So to get the value we do this:
+        contents = file.value
+        filename = file.filename
+        f = open(os.path.join(dir, filename), 'w')
+        f.write(contents)
+        f.close()
+        self.response().sendRedirect('View?filename=%s'
+                                     % urlEncode(filename))
+</pre>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<%-- This is a PSP comment. It won't show up in the HTML or even in the class that this file will generate --%>
+
+<%@ page imports = "sys,os,time"%> <%-- Here's the modules that I need in this file --%>
+<%-- You normally don't need any of the other page directives used here. --%>
+<%@ page imports = "PSP.Examples.PSPExamplePage" %>
+<%@ page method="writeContent" %> <%-- This is the method of the base class that I want to override, writeHTML is the default --%>
+<%@ page extends="PSP.Examples.PSPExamplePage"%> <%--This is the base class for this page.  Page is the default --%>
+<%@ page isInstanceSafe="yes" %> <%-- each instance of this class can be used multiple times --%>
+<%@ page indentType="tabs" %>
+<%@ page gobbleWhitespace="YES" %> <%-- Default is Yes, so this line isn't needed --%>
+
+
+<%--  Method declaration Test --%>
+<psp:method name="title" params="">
+return "PSP Tests Page"
+</psp:method>
+
+
+
+
+<HTML>
+<BODY bgcolor='white'>
+
+
+<BASE HREF="http://<%= req.serverURLDir()%>">
+
+
+<p align = center><img src="psplogo.png"><%-- This image is served by WebKit --%>
+<h1 align=center><font color='blue'  face='helvetica'>Hello from PSP!</font></h1><br><br>
+
+
+<table width="100%"><tr width="90%"><td></td><td width="90%">
+<center><h2>This is the sample/test page for an implementation of Python Server Pages.</h2></center>
+
+
+
+<p><h3>Read the documentation <a href="PSPDocs.psp">here</a>.</h3>
+<p> See the source for this page <a href="View.py?filename=<%=os.path.basename(self.request().serverSidePath())%>">here</a>
+
+<br>
+<p>The syntax for Python Server Pages is almost identical to that of Java Server Pages (JSP).  Just the scripting language is different! And obviously better.  In fact, just about anything you can do with JSP, you can do with PSP, and more.  With PSP, not only can you create template text that will be inerted in one method when the page is run as a servlet, but you can choose which base class to inherit from, you can choose which method of the base class to over-ride with your template text, and you can add additional methods to the servlet class, all from the PSP template code.  We've got a bean equivalent called Can, too. (can of spam, get it?  That's OK, there are others who don't like it either).
+<p>
+
+<br><br>
+The text below comes from another psp page which was inserted into this one with the &lt%@ include %> directive.
+<p>
+<font color="red">
+<%@ include file="my_include.psp" %>
+</font>
+
+<p>
+<p>There are actually two ways to insert the contents of another file into a PSP page.  use &lt%@ include file="somefile" %&gt will effectively insert the contents of the other file before class creation time.
+
+<p>Using &lt psp:include path="somefile"/&gt will insert the output of the specified WebKit URL into the page <i>dynamically</i>.
+<p>
+
+
+<font color="blue">
+<psp:include path = "APSPinclude.html">
+
+<br/>
+Time at which dynamic output was generated: <psp:include path = "APSPinclude.psp">
+<br/>
+Time it takes to forward a request to APSPinclude.psp 10 times:
+<%
+starttime = time.time()
+for i in range(1,10):
+	self.application().includeURL(self.transaction(), "APSPinclude.psp")
+endtime = time.time()
+looptime = endtime - starttime
+%>
+<br/>Total time: <%=looptime%> seconds
+</font>
+<p>
+<hr>
+
+
+
+<b>Below is a loop test</b>
+<br> Loops are the trickiest part of PSP due to Python Indentation for blocks syntax.
+<br>
+
+
+<% for i in range(2): %> <%-- Loop #1, an automatic loop --%>
+<% self.write('<p>outerloop: ')
+self.write(i)%>&nbsp;
+<% for n in range(2): %>  <%-- Another automatic loop --%>
+<p><i> &nbsp;&nbsp;Inner Loop: <%= n %><br> </i>
+<%self.write('Still in the inner loop') %>
+<% end %>  <%-- End loop #1 --%>
+<% end %>  <%-- End loop #2 --%>
+
+
+<hr>
+<b>Unix system info.</b>
+<table bgcolor = 'blue'>
+<% if os.name == 'posix':
+	for i in os.uname():
+		res.write('<tr><td><font color="white">'+str(i)+'</font></td></tr>')
+%>
+</table>
+<hr>
+<p>Path Info: <%=req.pathInfo()%>
+<p>extraURLPath: <%=req.extraURLPath()%>
+<p>Fields: <%= req.fields() %>
+<p>servletURI = <%= req.servletURI()%>
+<p>uriWebKitRoot = <%= req.uriWebKitRoot() %>
+<p>serverURL = <%= req.serverURL() %>
+<p>serverURLDir = <%= req.serverURLDir() %>
+
+<hr>
+<p><b>Request Variables</b>
+
+<p><table>
+<%
+for i in self.request()._environ.keys():
+	if len(self.request()._environ[i]) > 100:
+		res.write("<tr><td><font color='red'>"+str(i)+'</font></td><td><font color="blue">'+self.request()._environ[i][:100]+'</font></td></tr>')
+	else:
+		res.write("<tr><td><font color='red'>"+str(i)+'</font></td><td><font color="blue">'+self.request()._environ[i]+'</font></td></tr>')
+%>
+</table>
+
+<hr>
+
+
+<br><%=  time.ctime(time.time())%>
+
+<%-- Comment check --%> <%-- #This kind not even in python file created. --%>
+<!-- Comment Check -->
+
+<%--  Method declaration Test --%>
+<psp:method name="testing" params="val">
+self._response.write('<br>I\'m a method. ')
+self._response.write(val)
+</psp:method>
+
+<p>Testing a class method defined in the psp code.<br>
+<%self.testing('Howdy!')%>
+
+
+<%-- "pass" can be used to end a block, so test that it can be used by itself too! --%>
+<% pass %>
+<p>
+If Test<br>
+<%if 1:%>
+<b>It's True</b>
+<%end%>
+<%else:%>
+It's false
+<%end%>
+
+
+
+</td><td></td></tr></table>
+
+</BODY>
+</HTML>
+

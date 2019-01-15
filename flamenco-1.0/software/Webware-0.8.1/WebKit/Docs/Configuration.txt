@@ -1,0 +1,368 @@
+Configuration Guide
++++++++++++++++++++
+
+.. contents::
+
+Command Line Configuration
+==========================
+
+Each of these can be set in the ``.config`` files, but they can be overridden with the command line.  Run ``AppServer`` with switches in the form ``--ClassName.SettingName=value``, e.g. ``--AppServer.Port=1``
+
+The ``value`` is coerced into a Python type: if it starts with one of the characters ``({["'`` -- i.e., parenthesis (expression), dictionary, list, or string -- then the value with be eval'ed.  If it can be turned into an integer or float, then it will be converted, otherwise it will be left as a string.  Some examples:
+
+* ``1`` == 1
+* ``127.0.0.1`` == "127.0.0.1"
+* ``(10+2)`` == 12
+* ``{'a': 'b'}`` == {'a': 'b'}
+* ``{a: b}`` == *error*
+* ``[1, 'c', [2, 3]]`` == [1, 'c', [2, 3]]
+
+Be careful about special characters in the shell.  All the characters ``() [] ' "`` are special, and need to be quoted (with ``\`` or with single or double quotation marks).
+
+Application.config
+==================
+
+``Application.config`` covers not only the application, but a number
+of components that use it as a central point of configuration.
+
+General Settings
+----------------
+
+``Contexts``:
+    This dictionary maps context names to the directory holding the
+    context content. Since the default contexts all reside in WebKit,
+    the paths are simple and relative. The context name appears as the
+    first path component of a URL, otherwise ``Contexts['default']``
+    is used when none is specified. When creating your own
+    application, you will add a key such as ``"MyApp"`` with a value
+    such as ``"/home/apps/MyApp"``.  That directory will then contain
+    content such as Main.py, SomeServlet.py, SomePage.psp,
+    etc. ``Webware/bin/MakeAppWorkDir.py`` will set up a context for
+    your use as well.  Default::
+
+        {
+            'default':   'Examples',
+            'Admin':     'Admin',
+            'Examples':  'Examples',
+            'Docs':      'Docs',
+            'Testing':   'Testing',
+        }
+
+``AdminPassword``:
+    The password that, combined with the ``admin`` id, allows access
+    to the ``AppControl`` page of the ``Admin`` context.  Set
+    interactively when ``install.py`` is run.  *No default*.
+``PrintConfigAtStartUp``:
+    Print the configuration to the console when AppServer starts.
+
+Path Handling
+-------------
+
+These configuration settings control which files are exposed to users,
+which files are hidden, and some of how those files get chosen.
+
+``DirectoryFile``:
+    The list of basic filenames that WebKit searches for when serving
+    up a directory. Note that the extensions are absent since WebKit
+    will look for a file with any appropriate extension (``.py``.,
+    ``.html``, ``.psp``, etc).  Default ``["index", "Main"]``.
+``ExtensionsToIgnore``:
+    This is a list of extensions that WebKit will ignore when
+    autodetecting extensions. Note that this does not prevent WebKit
+    from serving such a file if the extension is given explicitly in a
+    URL.  Default ``['.pyc', '.pyo', '.py~', '.bak']``.
+``ExtensionsToServe``:
+    This is a list of extensions that WebKit will use exclusively when
+    autodetecting extensions. Note that this does not prevent WebKit
+    from serving such a file if it is named explicitly in a URL.  If
+    no extensions are given all extensions will be served (usually
+    anything but ``.py`` and ``.psp`` will be served as a static
+    file).  Default: ``[]``.
+``UserCascadingExtensions``:
+    If false, WebKit will give a ``404 Not Found`` result if there is
+    more than one file that could potentially match.  If true then
+    WebKit will use the ``ExtensionCascadeOrder`` setting to determine
+    which option to serve.  Default: ``1`` (true).
+``ExtensionCascadeOrder``:
+    A list of extensions that WebKit will choose, in order, when files
+    of the same basename but different extensions are available.  Note
+    that this will have no effect if the extension is given in the
+    URL.  Default: ``[".psp", ".py", ".html"]``.
+``FilesToHide``:
+    File patters to protect from browsing.  This affects all requests,
+    and these files cannot be retrieved even when the extension is
+    given explicitly.  Default: ``[".*", "*~", "*bak", "*.tmpl",
+    "*.pyc", "*.pyo", "*.config"]``.
+``FilesToServe``:
+    File patterns to serve from exclusively. If the file being served
+    for a particulary request does not match one of these patterns an
+    ``HTTP 403 Forbidden`` error will be return.  This affects all
+    requests, not just requests with autodetected extensions.  If set
+    to ``[]`` then no restrictions are placed.  Default: ``[]``.
+``SessionStore``:
+    This setting determines which of the three session stores is used
+    by the application: ``File``, ``Dynamic`` or ``Memory``. The
+    ``File`` store always gets sessions from disk and puts them back
+    when finished.  ``Memory`` always keeps all sessions in memory,
+    but will periodically back them up to disk.  ``Dynamic`` is a good
+    cross between the two, which pushes excessive or inactive sessions
+    out to disk.  Default: ``Dynamic``.
+``SessionTimeout``:
+    Determines the amount of time (expressed in minutes) that passes
+    before a user's session will timeout. When a session times out,
+    all data associated with that session is lost.  Default: ``60``.
+``IgnoreInvalidSession``:
+    If false, then an error message will be returned to the user if
+    the user's session has timed out or doesn't exist.  If true, then
+    servlets will be processed with no session data.  Default: ``1``
+    (true). 
+``UseAutomaticPathSessions``:
+    If true, then the app server will include the session ID in the
+    URL by inserting a component of the form ``_SID_=8098302983`` into
+    the URL, and will parse the URL to determine the session ID.  This
+    is useful for situations where you want to use sessions, but it
+    has to work even if the users can't use cookies.  If you use
+    relative paths in your URLs, then you can ignore the presence of
+    these sessions variables.  Default: ``0`` (false).
+``MaxDynamicMemorySessions``:
+    The maximum number of dynamic memory sessions that will be
+    retained in memory. When this number is exceeded, the least
+    recently used, excess sessions will be pushed out to disk. This
+    setting can be used to help control memory requirements,
+    especially for busy sites. This is used only if the
+    ``SessionStore`` is set to ``Dynamic``.  Default: ``10000``.
+``DynamicSessionTimeout``:
+    The number of minutes of inactivity after which a session is
+    pushed out to disk. This setting can be used to help control
+    memory requirements, especially for busy sites. This is used only
+    if the ``SessionStore`` is set to ``Dynamic``.  Default: ``15``.
+``SessionPrefix``:
+    This setting can be used to prefix the session IDs with a string.
+    Possible values are ``None`` (don't use a prefix), ``"hostname"``
+    (use the hostname as the prefix), or any other string (use that
+    string as the prefix).  You can use this for load balancing, where
+    each Webware server uses a different prefix.  You can then use
+    mod_rewrite_ or other software for load-balancing to redirect each
+    user back to the computer they first accessed.  This way the
+    backend servers do not have to share session data.  Default:
+    ``None``.  @@ ib: need a better mod_rewrite link.
+
+    .. _mod_rewrite: UserGuide.html 
+
+``ExtraPathInfo``:
+    When enabled, this setting allows a servlet to be followed by
+    additional path components which are accessible via HTTPRequest's
+    ``extraURLPath()``. For subclassers of ``Page``, this would be
+    ``self.request().extraURLPath()``.  Default: ``0`` (false).
+``UnknownFileTypes``:
+    This setting controls the manner in which WebKit serves "unknown
+    extensions" such as .html, .gif, .jpeg, etc. The default settings
+    specify that the servlet matching the file be cached in memory,
+    that the contents of the file be cached in memory and that the
+    file timestamp to be checked on every request. This works well for
+    most sites.
+
+    If your site has a large amount of static files being served via
+    WebKit, you should consider changing ``"CacheContent"`` to 0. If
+    you are confident that your static files do not get updated while
+    the app server is live, then you might consider changing
+    ``"CheckDate"`` to ``0`` for (slightly) better performance.  If
+    you are concerned about performance, use mod_rewrite_ to avoid
+    accessing WebKit for static content. @@ ib: link to mod_rewrite
+
+    The ``Technique`` setting can be switch to
+    ``"redirectSansAdapter"``, but this is an experimental setting
+    with some known problems.  Default::
+
+        {
+            'ReuseServlets': 1,
+
+            # Technique choices:
+            # serveContent, redirectSansAdapter
+            'Technique': 'serveContent',
+
+            # If serving content:
+            'CacheContent': 1,  # set to 0 to reduce memory use
+            'CheckDate':    1,
+        }
+
+Caching
+-------
+
+``CacheServletClasses``:
+    When set to zero, the AppServer will not cache the classes that
+    are loaded for servlets. This is for development and debugging.
+    You usually do not need this, as servlet modules are reloaded if
+    the file is changed.  Default ``1`` (true/caching on).
+``CacheServletInstances``:
+    When set to zero, the app server will not cache the instances that
+    are created for servlets. This is for development and debugging.
+    You usually do not need this, as servlet modules are reloaded and
+    cached instances purged when the servlet file changes.  Default
+    ``1`` (true/caching on).
+``ClearPSPCacheOnStart``:
+    When set to zero, the app server will allow PSP instances to
+    persist from one AppServer run to the next.  If you have PSPs that
+    take a long time to compile, this can give a speedup.  Default:
+    ``1`` (true/caching does not persist)
+
+Errors
+------
+
+``ShowDebugInfoOnErrors``:
+    If true, then uncaught exceptions will not only display a message
+    for the user, but debugging information for the developer as
+    well. This includes the traceback, HTTP headers, form fields,
+    environment and process ids. You will most likely want to turn
+    this off when deploying the site for users.  Default ``1``.
+``IncludeFancyTraceback``:
+    If true, then display a fancy, detailed traceback at the end of
+    the error page.  It will include the values of local variables in
+    the traceback.  This makes use of a modified version of
+    ``cgitb.py`` which is included with Webware.  The `original
+    version`_ was written by Ka-Ping Yee.  Default ``0`` (off).
+
+    .. _`original version`: http://web.lfw.org/python/
+
+``FancyTracebackContext``:
+    The number of lines of source code context to show if
+    IncludeFancyTraceback is turned on.  Default: ``5``.
+``UserErrorMessage``:
+    This is the error message that is displayed to the user when an
+    uncaught exception escapes a servlet.  Default: ``"The site is
+    having technical difficulties with this page. An error has been
+    logged, and the problem will be fixed as soon as
+    possible. Sorry!"``
+``ErrorLogFilename``:
+    The name of the file where exceptions are logged. Each entry
+    contains the date and time, filename, pathname, exception name and
+    data, and the HTML error message filename (assuming there is one).
+    Default: ``Logs/Errors.csv``.
+``SaveErrorMessages``:
+    If true, then errors (e.g., uncaught exceptions) will produce an
+    HTML file with both the user message and debugging
+    information. Developers/administrators can view these files after
+    the fact, to see the details of what went wrong.  These error
+    messages can take a surprising amount of space.  Default: ``1``
+    (true/do save).
+``ErrorMessagesDir``:
+    This is the name of the directory where HTML error messages get
+    stored.  Default: ``ErrorMsgs``.
+``EmailErrors``:
+    If true, error messages are e-mailed out according to the
+    ErrorEmailServer and ErrorEmailHeaders settings. You must also set
+    ``ErrorEmailServer`` and ``ErrorEmailHeaders``.  Default: ``0``
+    (false/do not email).
+``EmailErrorReportAsAttachment``:
+    1 to make html error reports be emailed as text with an html
+    attachment, or 0 to make the html the body of the message.
+    Default ``0`` (false/html in body).
+``ErrorEmailServer``:
+    The SMTP server to use for sending e-mail error messages.
+    Default: ``"mail.-.com"`` (i.e., unset)
+``ErrorEmailHeaders``:
+    The e-mail headers used for e-mailing error messages. Be sure to
+    configure ``"From"``, ``"To"`` and ``"Reply-to"`` before turning
+    ``EmailErrors`` on.  Default::
+
+        {
+            'From':         '-@-.com',
+            'To':           ['-@-.com'],
+            'Reply-to':     '-@-.com',
+            'Content-type': 'text/html',
+            'Subject':      'Error'
+        }
+
+``MaxValueLengthInExceptionReport``:
+    Values in exception reports are truncated to this length, to avoid
+    excessively long exception reports.  Set this to ``None`` if you
+    don't want any truncation.  Default: ``500``.
+``RPCExceptionReturn``:
+    Determines how much detail an RPC servlet will return when an
+    exception occurs on the server side. Can take the values, in order
+    of increasing detail, ``"occurred"``, ``"exception"`` and
+    ``"traceback"``. The first reports the string ``"unhandled
+    exception``", the second prints the actual exception, and the
+    third prints both the exception and accompanying traceback. All
+    returns are always strings.  Default: ``"traceback"``
+``ReportRPCExceptionsInWebKit``:
+    ``1`` means report exceptions in RPC servlets in the same way as
+    exceptions in other servlets, i.e. in the logfiles, the error log,
+    and/or by email.  ``0`` means don't report the exceptions on the
+    server side at all; this is useful if your RPC servlets are
+    raising exceptions by design and you don't want to be notified.
+    Default: ``1`` (true/do report exceptions).
+
+Logging
+-------
+
+``LogActivity``:
+    If true, then the execution of each servlet is logged with useful
+    information such as time, duration and whether or not an error
+    occurred.  Default: ``1`` (true).  
+``ActivityLogFilenames``:
+    This is the name of the file that servlet executions are logged
+    to. This setting has no effect if ``LogActivity`` is 0. The path
+    can be relative to the WebKit location, or an absolute path.
+    Default: ``"Logs/Activity.csv"``.
+``ActivityLogColumns``:
+    Specifies the columns that will be stored in the activity
+    log. Each column can refer to an object from the set:
+    [application, transaction, request, response, servlet, session]
+    and then refer to its attributes using "dot notation". The
+    attributes can be methods or instance attributes and can be
+    qualified arbitrarily deep.  Default: ``['request.remoteAddress',
+    'request.method', 'request.uri', 'response.size', 'servlet.name',
+    'request.timeStamp', 'transaction.duration',
+    'transaction.errorOccurred']``.
+
+AppServer.config
+================
+
+``Host``:
+    The host the server runs on.  There is little reason to change
+    this unless you have a machine with multiple network interfaces,
+    and you don't want Webware to listen on all interfaces.  
+    Default ``127.0.0.1``.  
+``Port``:
+    The port the application server listens to for requests from the
+    adapter.  You cannot point a browser to this port.  You may wish
+    to change this if you have another application running at this
+    port, or if you are running more than one AppServer they must each
+    be listening at a different port.  Default: ``8086``.
+``PluginDirs``:
+    When the application server starts up, it looks in these locations
+    for plugins.  Each plugin is a subdirectory of its own.  By
+    default WebKit looks in the ``Webware/`` directory (``..``) for
+    plugins -- several of which are shipped with Webware.  Default
+    ``[".."]``.  See `Creating Plugins`_ for information on creating
+    your own plug-ins. @@ ib: are these really differently cased?
+
+    .. _`Creating Plugins`: Developing.html#creatingplugins
+
+    The advantage of a plug-in directory is that you can add new
+    plug-ins to the app server simply by dropping them into the
+    directory; no additional configuration is necessary.
+``PlugIns``:
+    Loads the plug-ins from the given locations when starting the
+    AppServer.  You must add a directory to the list for every plug-in
+    you use -- ``PlugInDirs`` is usually easier.  Default ``[]``.
+``PrintConfigAtStartUp``:
+    Prints configuration to console at startup.  Default ``1`` (true).
+``Verbose``:
+    If true, then additional messages are printed while the AppServer
+    runs, most notably information about each request such as size and
+    response time.  Default ``1`` (true).
+``ServerThreads``: 
+    The maximum number of threads in the request handler thread pool,
+    and therefore, the maximum number of concurrent requests that can
+    be served. Unless you have a serious load on a high end machine,
+    the default is generally sufficient.  Default ``10``.  @@ ib: I
+    don't believe this is correct -- I think more threads are
+    created on demand, but only this many threads sit around waiting.
+``CheckInterval``:
+    The number of virtual instructions after which Python will check
+    for thread switches, signal handlers, etc. This is passed directly
+    to ``sys.setcheckinterval()``. Benchmarks have shown 100 to give a
+    worthwhile performance boost with higher values resulting in
+    little gain.  Default ``100``.

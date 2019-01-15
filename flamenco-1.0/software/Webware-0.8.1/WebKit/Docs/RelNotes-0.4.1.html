@@ -1,0 +1,39 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	<style type="text/css">
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>WebKit 0.4.1 Release Notes</title>
+</head>
+
+<body>
+
+<h1>WebKit 0.4.1 Release Notes</h1>
+Version 0.4.1
+<br>Webware for Python 0.4.1
+
+
+<a name=Changes><h2>Changes</h2></a>
+<ul>
+	<li> Version 0.4.1 was released on 10/5/2000.
+	<li> We officially support and test on Python 1.5.2 and Python 2.0b2.
+	<li> These two items were the major drivers for the 0.4.1 release:
+		<p>
+		<ul>
+		<li> Fixes to socket calls like connect() and bind() to support API restrictions in Python 2.0b2.
+		<li> Fixes and refinements to the WebKit <a href=InstallGuide.html>Install Guide</a>.
+		</ul>
+	<li> Also, in <code>Application.__init__()</code>, moved the creation of sessions to come after contexts, since context initialization code might be necessary for unarchiving sessions. Also moved the creation of contexts after servlet factories, in case contexts need to access them. <br> Note: As a WebKit user, you probably don't have to understand this. You'll just enjoy the smoother operation.
+</ul>
+
+
+<p><hr>
+
+</body>
+</html>

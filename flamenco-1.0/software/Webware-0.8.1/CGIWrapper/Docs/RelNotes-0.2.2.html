@@ -1,0 +1,32 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	<style type="text/css">
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>CGIWrapper 0.2.2 Release Notes</title>
+</head>
+
+<body>
+
+<h1>CGIWrapper 0.2.2 Release Notes</h1>
+<br>Webware for Python
+
+
+<a name=Changes><h2>Changes</h2></a>
+<ul>
+	<li> Version 0.2.2 was released on @@/@@/2001.
+	<li> CGIWrapper's exception handling no longer fails on non-posix platforms such as Windows ME. Previously, it was trying to get too many OS values such as getegid(). Now it only gets the ones that are available.
+	<li> sys.path is dealt with better. A <b>''</b> always appears at the front, and the <b>'..'</b> that was previously installed (in the event that Webware modules couldn't be found) is now passed through os.path.abspath().
+</ul>
+
+
+<p><hr>
+
+</body>
+</html>

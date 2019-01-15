@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.2.8: http://docutils.sourceforge.net/" />
+<title>WebKit User's Guide</title>
+<link rel="stylesheet" href="default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="webkit-user-s-guide">
+<h1 class="title">WebKit User's Guide</h1>
+<p>Version 0.8.1, Webware for Python</p>
+<div class="contents topic" id="contents">
+<p class="topic-title"><a name="contents">Contents</a></p>
+<ul class="simple">
+<li><a class="reference" href="#synopsis" id="id5" name="id5">Synopsis</a></li>
+<li><a class="reference" href="#feedback" id="id6" name="id6">Feedback</a></li>
+<li><a class="reference" href="#introduction" id="id7" name="id7">Introduction</a><ul>
+<li><a class="reference" href="#python-9" id="id8" name="id8">Python 9</a></li>
+<li><a class="reference" href="#overview" id="id9" name="id9">Overview</a></li>
+<li><a class="reference" href="#compared-to-cgi-applications" id="id10" name="id10">Compared to CGI applications</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#errors-uncaught-exceptions" id="id11" name="id11">Errors / Uncaught Exceptions</a></li>
+<li><a class="reference" href="#id3" id="id12" name="id12">Configuration</a></li>
+<li><a class="reference" href="#administration" id="id13" name="id13">Administration</a></li>
+<li><a class="reference" href="#debugging" id="id14" name="id14">Debugging</a><ul>
+<li><a class="reference" href="#print" id="id15" name="id15">print</a></li>
+<li><a class="reference" href="#raising-exceptions" id="id16" name="id16">Raising Exceptions</a></li>
+<li><a class="reference" href="#restarting-the-server" id="id17" name="id17">Restarting the Server</a></li>
+<li><a class="reference" href="#assertions" id="id18" name="id18">Assertions</a></li>
+<li><a class="reference" href="#html-validation" id="id19" name="id19">HTML Validation</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#naming-conventions" id="id20" name="id20">Naming Conventions</a></li>
+<li><a class="reference" href="#actions" id="id21" name="id21">Actions</a><ul>
+<li><a class="reference" href="#plug-ins" id="id22" name="id22">Plug-ins</a></li>
+<li><a class="reference" href="#how-do-i-develop-an-app" id="id23" name="id23">How do I develop an app?</a></li>
+<li><a class="reference" href="#known-bugs" id="id24" name="id24">Known Bugs</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="synopsis">
+<h1><a class="toc-backref" href="#id5" name="synopsis">Synopsis</a></h1>
+<p>WebKit provides Python classes for generating dynamic content from a
+web-based, server-side application. It is a significantly more
+powerful alternative to CGI scripts for application-oriented
+development.</p>
+</div>
+<div class="section" id="feedback">
+<h1><a class="toc-backref" href="#id6" name="feedback">Feedback</a></h1>
+<p>You can e-mail <a class="reference" href="mailto:webware-discuss&#64;lists.sourceforge.net">webware-discuss&#64;lists.sourceforge.net</a> to give feedback,
+discuss features, and get help using WebKit.  If you have a bug to
+report, use the <a class="reference" href="http://sourceforge.net/tracker/?atid=104866&amp;group_id=4866&amp;func=browse">bug tracker</a>.</p>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id7" name="introduction">Introduction</a></h1>
+<div class="section" id="python-9">
+<h2><a class="toc-backref" href="#id8" name="python-9">Python 9</a></h2>
+<p>A paper titled &quot;Introduction to Webware&quot; was accepted for <a class="reference" href="http://www.python9.org">Python 9</a>,
+which ran the week of March 4th, 2001. &#64;&#64; ib: where are these now?</p>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id9" name="overview">Overview</a></h2>
+<p>The core concepts of the WebKit are the Application, Servlet, Request,
+Response and Transaction, for which there are one or more Python
+classes.</p>
+<p>The application resides on the server-side and manages incoming
+requests in order to deliver them to servlets which then produce
+responses that get sent back to the client. A transaction is a simple
+container object that holds references to all of these objects and is
+accessible to all of them.</p>
+<p>Content is normally served in HTML or XML format over an HTTP
+connection. However, applications can provide other forms of content
+and the framework is designed to allow new classes for supporting
+protocols other than HTTP.</p>
+<p>In order to connect the web server and the application server a small
+program called an <em>adapter</em> is used. It bundles a web browser
+request and sends it to the application server, which then processes
+it and sends the response back to the adapter which then outputs the
+results for use by the web server. Adapters come in various flavors
+including CGI, FastCGI and Apache mod. See the <a class="reference" href="InstallGuide.html">Install Guide</a> for
+more information.</p>
+<p>At a more detailed level, the process looks like this:</p>
+<ul class="simple">
+<li>At some point, someone has configured and run both a web server
+(such as Apache) and the WebKit app server (WebKit/AppServer).</li>
+<li>A user requests a web page by typing a URL or submitting a form.</li>
+<li>The user's browser sends the request to the remote web server.</li>
+<li>The web server invokes the adapter.</li>
+<li>The adapter simply collects information about the request and sends
+it to the WebKit app server which is ready and waiting.</li>
+<li>The app server asks the Application object to dispatch the raw
+request.</li>
+<li>The application instantiates an HTTPRequest object and asks the
+appropriate Servlet (as determined by examining the URL) to process
+it.</li>
+<li>The servlet generates content into a given HTTPResponse object,
+whose content is then sent back by the app server to the adapter.</li>
+<li>The adapter sends the content through the web server and ultimately to
+the user's web browser.</li>
+</ul>
+<p>For a more detailed guide, see <a class="reference" href="AnatomyTransaction.html">Anatomy of a Webware Transaction</a>.</p>
+</div>
+<div class="section" id="compared-to-cgi-applications">
+<h2><a class="toc-backref" href="#id10" name="compared-to-cgi-applications">Compared to CGI applications</a></h2>
+<p>The alternative to a server-side application is a set of CGI
+scripts. However, a CGI script must always be launched from scratch
+and many common tasks will be performed repeatedly for each
+request. For example, loading libraries, opening database connections,
+reading configuration files, etc.</p>
+<p>With the long-running server-side application, the majority of these
+tasks can be done once at launch time and important results can be
+easily cached. This makes the application significantly more
+efficient.</p>
+<p>Of course, CGIs can still be appropriate for &quot;one shot&quot; deals or
+simple applications. Webware includes a <a class="reference" href="../../CGIWrapper/Docs/index.html">CGI Wrapper</a> if you'd like
+to encapsulate your CGI scripts with robust error handling, e-mail
+notifications, etc. &#64;&#64; ib: is this still really supported?</p>
+</div>
+</div>
+<div class="section" id="errors-uncaught-exceptions">
+<h1><a class="toc-backref" href="#id11" name="errors-uncaught-exceptions">Errors / Uncaught Exceptions</a></h1>
+<p>One of the conveniences provided by WebKit is the handling of uncaught
+exceptions. The response to an uncaught exception is:</p>
+<ul class="simple">
+<li>Log the time, error, script name and traceback to AppServer's console.</li>
+<li>Display a web page containing an apologetic message to the user.</li>
+<li>Save a technical web page with debugging information so that
+developers can look at it after-the-fact. These HTML-based error
+messages are stored one-per-file, if the <tt class="literal"><span class="pre">SaveErrorMessages</span></tt>
+setting is true (the default). They are stored in the directory
+named by the <tt class="literal"><span class="pre">ErrorMessagesDir</span></tt> (defaults to <tt class="literal"><span class="pre">&quot;ErrorMsgs&quot;</span></tt>).</li>
+<li>Add an entry to the error log, found by default in
+<tt class="literal"><span class="pre">Logs/Errors.csv</span></tt></li>
+<li>E-mail the error message if the <tt class="literal"><span class="pre">EmailErrors</span></tt> setting is true,
+using the settings <tt class="literal"><span class="pre">ErrorEmailServer</span></tt> and
+<tt class="literal"><span class="pre">ErrorEmailHeaders</span></tt>. See <a class="reference" href="Configuration.html#errors">Configuration</a> for more information.</li>
+</ul>
+<p>Here is a <a class="reference" href="SampleError.html">sample error page</a>.</p>
+<p>Archived error messages can be browsed through the <a class="reference" href="#administration">administration</a> page.</p>
+<p>Error handling behavior can be configured as described in <a class="reference" href="Configuration.html#errors">Configuration</a>.</p>
+</div>
+<div class="section" id="id3">
+<h1><a class="toc-backref" href="#id12" name="id3">Configuration</a></h1>
+<p>There are several configuration parameters through which you can alter
+how WebKit behaves. They are described below, including their default
+values. Note that you can override the defaults by placing config
+files in the <tt class="literal"><span class="pre">Configs/</span></tt> directory. A config file simply contains a
+Python dictionary containing the items you wish to override. For
+example:</p>
+<pre class="literal-block">
+{
+    'SessionStore': 'Memory',
+    'ShowDebugInfoOnErrors': 1
+}
+</pre>
+<p>See the <a class="reference" href="Configuration.html">Configuration Guide</a> for more information on settings.</p>
+</div>
+<div class="section" id="administration">
+<h1><a class="toc-backref" href="#id13" name="administration">Administration</a></h1>
+<p>WebKit has a built-in administration page that you can access via the
+<tt class="literal"><span class="pre">Admin</span></tt> context. You can see a list of all contexts in the sidebar
+of any <tt class="literal"><span class="pre">Example</span></tt> or <tt class="literal"><span class="pre">Admin</span></tt> page.</p>
+<p>The admin pages allows you to view WebKit's configuration, logs, and
+servlet cache, and perform actions such as clearing the cache,
+reloading selected modules and shutting down the app server.</p>
+<p>More sensitive pages that give control over the app server require a
+user name and password, the username is <tt class="literal"><span class="pre">admin</span></tt>, and you'll set the
+password when you run <tt class="literal"><span class="pre">install.py</span></tt>. You can change the password in
+<tt class="literal"><span class="pre">WebKit/Configs/Application.config</span></tt>.</p>
+<p>The adminstration scripts provide further examples of writing pages
+with WebKit, so you may wish to examine their source in
+<tt class="literal"><span class="pre">WebKit/Admin/</span></tt>.</p>
+</div>
+<div class="section" id="debugging">
+<h1><a class="toc-backref" href="#id14" name="debugging">Debugging</a></h1>
+<div class="section" id="print">
+<h2><a class="toc-backref" href="#id15" name="print">print</a></h2>
+<p>The most common technique is the infamous <tt class="literal"><span class="pre">print</span></tt> statement. The
+results of <tt class="literal"><span class="pre">print</span></tt> statements go to the console where the WebKit
+application server was started (not to the HTML page as would happen
+with CGI). Prefixing the debugging output with a special tag (such as
+&gt;&gt;) is useful because it stands out on the console and you can search
+for the tag in source code to remove the print statements after they
+are no longer useful. For example:</p>
+<pre class="literal-block">
+print '&gt;&gt; fields =', self.request().fields()
+</pre>
+<!-- Note that if you are using <a
+href=InstallGuide.html#Adapters_OneShot>OneShot.cgi</a>, then you will
+need to set <span class=name>ShowConsole</span> to 1 in <span
+class=filename>WebKit/Configs/OneShotAdapter.config</span>. @@ ib:
+shall we kill this? -->
+</div>
+<div class="section" id="raising-exceptions">
+<h2><a class="toc-backref" href="#id16" name="raising-exceptions">Raising Exceptions</a></h2>
+<p>Uncaught expections are trapped at the application level where a
+useful error page is saved with information such as the traceback,
+environment, fields, etc. You can configure the application to
+automatically e-mail you this information. Here is an <a class="reference" href="SampleError.html">example error
+page</a>.</p>
+<p>When an application isn't behaving correctly, raising an exception can
+be useful because of the additional information that comes with
+it. Exceptions can be coupled with messages, thereby turning them into
+more powerful versions of the <tt class="literal"><span class="pre">print</span></tt> statement. For example:</p>
+<pre class="literal-block">
+raise Exception, 'self = %s' % self
+</pre>
+</div>
+<div class="section" id="restarting-the-server">
+<h2><a class="toc-backref" href="#id17" name="restarting-the-server">Restarting the Server</a></h2>
+<p>When a servlet's source code changes, it is reloaded. However,
+ancestor classes of servlets and library modules are not.  You may wish
+to use the <a class="reference" href="&#64;&#64;fixme">auto-reloading feature</a> to mitigate this problem.</p>
+<p>In any case, when having problems, consider restarting the app server.</p>
+<p>Another option is to use the AppControl page of the <a class="reference" href="#administration">Admin</a> context
+to clear the servlet instance and class cache.</p>
+</div>
+<div class="section" id="assertions">
+<h2><a class="toc-backref" href="#id18" name="assertions">Assertions</a></h2>
+<p>Assertions are used to ensure that the internal conditions of the
+application are as expected. An assertion is equivalent to an <tt class="literal"><span class="pre">if</span></tt>
+statement coupled with an exception. For example:</p>
+<pre class="literal-block">
+assert shoppingCart.total()&gt;=0.0, \
+    'shopping cart total is %0.2f' % shoppingCart.total()
+</pre>
+</div>
+<div class="section" id="html-validation">
+<h2><a class="toc-backref" href="#id19" name="html-validation">HTML Validation</a></h2>
+<p>You can validate the HTML in your pages using the <a class="reference" href="http://www.htmlhelp.com/tools/validator/">Web Designer
+Group's HTML Validator</a>.  It is available as a <a class="reference" href="http://www.htmlhelp.com/tools/validator/packages/">RPM package</a>, in
+Debian as <tt class="literal"><span class="pre">wdg-html-validator</span></tt> and you can also install the <a class="reference" href="http://www.htmlhelp.com/tools/validator/source.html">source</a>.</p>
+<p>To enable the validation, you have to override <tt class="literal"><span class="pre">.writeBodyParts()</span></tt>
+in your <tt class="literal"><span class="pre">SitePage</span></tt>, as:</p>
+<pre class="literal-block">
+def writeBodyParts(self):
+    Page.writeBodyParts()
+    self.validateHTML()
+</pre>
+<p>If your pages contain invalid HTML, a message will be appended to the
+page.</p>
+</div>
+</div>
+<div class="section" id="naming-conventions">
+<h1><a class="toc-backref" href="#id20" name="naming-conventions">Naming Conventions</a></h1>
+<p>Cookies and form values that are named with surrounding underscores
+(such as <tt class="literal"><span class="pre">_sid_</span></tt> and <tt class="literal"><span class="pre">_action_</span></tt>) are generally reserved by WebKit
+and various plugins and extensions for their own internal purposes. If
+you refrain from using surrounding underscores in your own names, then
+[a] you won't accidentally clobber an already existing internal name
+and [b] when new names are introduced by future versions of WebKit,
+they won't break your application.</p>
+</div>
+<div class="section" id="actions">
+<h1><a class="toc-backref" href="#id21" name="actions">Actions</a></h1>
+<p>Suppose you have a web page with a form and one or more
+buttons. Normally, when the form is submitted, a method such as
+Servlet's <tt class="literal"><span class="pre">respondToPost()</span></tt> or Page's <tt class="literal"><span class="pre">writeHTML()</span></tt>, will be
+invoked. However, you may find it more useful to bind the button to a
+specific method of your servlet such as <tt class="literal"><span class="pre">new()</span></tt>, <tt class="literal"><span class="pre">remove()</span></tt>
+etc. to implement the command, and reserve <tt class="literal"><span class="pre">writeHTML()</span></tt> for
+displaying the page and the form that invokes these methods.  Note
+that your &quot;command methods&quot; can then invoke <tt class="literal"><span class="pre">writeHTML()</span></tt> after
+performing their task.</p>
+<p>The <em>action</em> feature of <tt class="literal"><span class="pre">Page</span></tt> let's you do this. The process goes
+like this:</p>
+<ol class="arabic">
+<li><p class="first">Add buttons to your HTML form of type <tt class="literal"><span class="pre">submit</span></tt> and name
+<tt class="literal"><span class="pre">_action_</span></tt>. For example:</p>
+<pre class="literal-block">
+&lt;input name=&quot;_action_&quot; type=&quot;submit&quot; value=&quot;New&quot;&gt;
+&lt;input name=&quot;_action_&quot; type=&quot;submit&quot; value=&quot;Delete&quot;&gt;
+</pre>
+</li>
+<li><p class="first">Alternately, name the submit button <tt class="literal"><span class="pre">_action_methodName</span></tt>.  For
+example:</p>
+<pre class="literal-block">
+&lt;input name=&quot;_action_New&quot; type=&quot;submit&quot; value=&quot;Create New Item&quot;&gt;
+</pre>
+</li>
+<li><p class="first">Add an <tt class="literal"><span class="pre">actions()</span></tt> method to your class to state which actions
+are valid.  (If WebKit didn't force you to do this, someone could
+potentially submit data that would cause any method of your servlet
+to be run).  For example:</p>
+<pre class="literal-block">
+def actions(self): 
+    return SuperClass.actions(self) + ['New', 'Delete']
+</pre>
+</li>
+<li><p class="first">Now you implement your action methods.</p>
+</li>
+</ol>
+<p>The <tt class="literal"><span class="pre">ListBox</span></tt> example shows the use of actions (in
+<tt class="literal"><span class="pre">WebKit/Examples/ListBox.py</span></tt>)</p>
+<div class="section" id="plug-ins">
+<h2><a class="toc-backref" href="#id22" name="plug-ins">Plug-ins</a></h2>
+<p>A plug-in is a software component that is loaded by WebKit in order to
+provide additional WebKit functionality without necessarily having to
+modify WebKit's source.</p>
+<p>The most infamous plug-in is PSP (Python Server Pages) which ships
+with Webware.</p>
+<p>Plug-ins often provide additional servlet factories, servlet
+subclasses, examples and documentation. Ultimately, it is the plug-in
+author's choice as to what to provide and in what manner.</p>
+<p>Technically, plug-ins are Python packages that follow a few simple
+conventions in order to work with WebKit. See <a class="reference" href="Developing.html#creatingplugins">Creating Plugins</a> for
+information about writing your own.</p>
+</div>
+<div class="section" id="how-do-i-develop-an-app">
+<h2><a class="toc-backref" href="#id23" name="how-do-i-develop-an-app">How do I develop an app?</a></h2>
+<p>The answer to that question might not seem clear after being deluged
+with all the details. Here's a summary:</p>
+<ul class="simple">
+<li>Make sure you can run the WebKit AppServer. See the <a class="reference" href="InstallGuide.html">Install Guide</a>
+for more information.</li>
+</ul>
+<ul class="simple">
+<li>Read the source to the examples (in <tt class="literal"><span class="pre">WebKit/Examples</span></tt>), then
+modify one of them to get your toes wet.</li>
+<li>Create your own new example from scratch. Ninety-nine percent of the
+time you will be subclassing the <tt class="literal"><span class="pre">Page</span></tt> class.</li>
+<li>Familiarize yourself with the class docs in order to take advantage
+of classes like Page, HTTPRequest, HTTPResponse and
+Session. Unfortunately, I couldn't get generated class docs working
+for this release, so you'll have to resort to breezing through the
+source code which is coupled with documentation strings. Read the
+examples first.</li>
+<li>With this additional knowledge, create more sophisticated pages.</li>
+<li>If you need to secure your pages using a login screen, you'll want
+to look at the SecurePage, LoginPage, and SecureCountVisits examples
+in <tt class="literal"><span class="pre">WebKit/Examples</span></tt>.  You'll need to modify them to suit your
+particular needs.</li>
+<li>Contribute enhancements and bug fixes back to the project. <tt class="literal"><span class="pre">:-)</span></tt></li>
+<li>The Webware user community is quite supportive and friendly:<ul>
+<li>Discussion mailing list:
+<a class="reference" href="http://lists.sourceforge.net/mailman/listinfo/webware-discuss">http://lists.sourceforge.net/mailman/listinfo/webware-discuss</a></li>
+<li>Make sure you find out about new versions when they're released,
+via the announce list:
+<a class="reference" href="http://lists.sourceforge.net/mailman/listinfo/webware-announce">http://lists.sourceforge.net/mailman/listinfo/webware-announce</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="known-bugs">
+<h2><a class="toc-backref" href="#id24" name="known-bugs">Known Bugs</a></h2>
+<p>Known bugs and future work in general are documented in <a class="reference" href="Future.html">Future</a>.</p>
+<p>Credit</p>
+<p>Authors: Chuck Esterbrook, Jay Love, Geoff Talvola.
+&#64;&#64; ib: We should add more names.</p>
+<p>Many people, mostly on the webware-discuss mailing list, have provided
+feedback and testing.</p>
+<p>The design was inspired by both Apple's WebObjects and Java's
+Servlets.</p>
+</div>
+</div>
+</div>
+</body>
+</html>

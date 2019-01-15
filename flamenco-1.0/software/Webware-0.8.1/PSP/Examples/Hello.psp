@@ -1,0 +1,47 @@
+<%-- This is a PSP comment. It won't show up in the HTML or even in the class that this file will generate --%>
+
+
+<%@ page imports = "sys,os,time,PSP.Examples.PSPExamplePage:PSPExamplePage"%> <%-- Here's the modules that I need in this file --%>
+<%@ page method="writeContent" %> <%-- This is the method of the base class that I want to override, writeHTML is the default --%>
+<%@ page extends="PSPExamplePage"%> <%--This is the base class for this page.  Page is the default --%>
+<%@ page isInstanceSafe="yes" %> <%-- each instance of this class can be used multiple times --%>
+<%@ page indentType="tabs" %> <%-- use tabs to indent the sourcefile that this template will produce --%>
+
+
+<%--  Method declaration Test --%>
+<psp:method name="title" params="">
+return "PSP Hello"
+</psp:method>
+
+<HTML>
+<BODY bgcolor='white'>
+<p align = center><img src="psplogo.png"><%-- This image is served by WebKit --%>
+<h1 align=center><font color='blue'  face='helvetica'>Hello from PSP!</font></h1><br><br>
+
+
+<p>This is PSP.  The docs are <a href="PSPDocs.psp">here</a>.
+<p>Here are some examples. PSPTests shows most of the functionality.
+<p>
+<%
+import glob
+filesyspath=self.request().serverSidePath()
+files=glob.glob(os.path.join(os.path.dirname(filesyspath),"*.psp"))
+for i in files:
+	file=os.path.split(i)[1]$%>   <%-- AhHa! Here's where we need the complex block syntax. OKay.  --%>
+
+<a href="<%=file%>"> <%= file %></a><br>
+
+<% end %>
+
+
+
+<p>
+<p><i>Note: The above files were generated using a loop that utilized the "userIndent" feature that's new for WebKit 0.4.</i>
+
+<p>
+<p>So anyway, read through the docs, and look at PSPTests.psp for examples.  Let us know what we can do better or more effectively.
+
+
+</BODY>
+</HTML>
+

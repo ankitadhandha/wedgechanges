@@ -1,0 +1,126 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	<title>WebKit Future Work</title>
+</head>
+
+<body>
+
+<h1>WebKit Future Work</h1>
+Version 0.8.1
+<br>Webware for Python 0.8.1
+
+
+<a name=Future><h2>Warning</h2></a>
+
+<p> This document hasn't been seriously combed over in some time.  It is definitely out of date.  You can find better information about known bugs and future work in the Wiki and in the SourceForge bug tracker, both accessible from the <a href="http://webware.sourceforge.net/">Webware Home Page</a>.
+
+
+<a name=Future><h2>Future Work/Limitations</h2></a>
+
+<p> Sprinkled throughout the code are comments tagged with <b>@@</b> which are hopefully accompanied by a date and someone's initials. These comments represent "TO BE DONE"s. The double at-sign (@@) convention was chosen because it doesn't appear to be used for anything else.
+
+<p> In addition to the inline comments, some significant items have been recorded below. These are future ideas, with no committments or timelines as to when/if they'll be realized. The Python WebKit is open source, so feel free to jump in!
+
+<p> The numbers below are mostly for reference, although longer term items tend to be pushed towards the bottom.
+
+<a name=KnownBugs><h3>Known Bugs</h3></a>
+
+<ol>
+	<li> The <i>stop</i> command for the <i>webkit</i> "rc" script does not work.
+	<li> There is one report that indicates that Application.serverSidePath() may be broken when using MakeAppWorkDir.
+	<li> Contexts do not have separate name spaces.
+	<li> The ListBox example does not take kindly to a Refresh/Reload after a delete operation. In essence, you are telling the ListBox to delete the same object twice.
+	<li> Problems have been reported with cookies on MS IE for the Mac.
+	<li> The OneShot adapter does not clean old sessions when using SessionFileStore.
+	<li> If a context appears in the Contexts setting once by name and once as the default, Application seems to load it twice.
+</ol>
+
+
+<a name=ToDo><h3>To Do</h3></a>
+
+<ol>
+	<li> <b>Major Items</b>
+		<ol>
+		<li> Rearchitect app servers, applications, contexts, etc. One process per application (not several applications per process). Don't worry though. 99% of servlet code will be unaffected by these changes.
+		<li> CheckSource.py: A program to check the source code conventions.
+		<li> FormKit: A plug-in to aid the construction and validation of forms. (Already in progress.)
+		<li> Role-based security and user-authentication. Goal is to eliminate, as much as possible, developer-written security logic. This should be provided by the WebKit and be configurable.
+		<li> Write a custom adaptor for Apache, Netscape, MS, etc.
+		<li> Distribution and load balancing.
+		<li> Fault tolerance.
+		<li> More sophisticated admin tools including password protection, clearing logs, displaying a maximum of information at a time, etc. Consider using module 'resource'.
+		<li> Investigate case insensitive URLs, especially for the Windows platform.
+		<li> Plug-ins
+			<ol>
+			<li> In ExamplePage, automatically support examples of any plug-in
+			<li> Better docs
+			<li> Properties.config. 'Load', 0, 1 or the name of the required op sys
+			</ol>
+		</ol>
+
+	<li> <b>General</b>
+		<ol>
+		<li> Hunt down: @@ tags (which signify "To Be Done"s), FUTURE items in class doc strings, NotImplementedErrors, -- tags
+		<li> Code clean up.
+		<li> Right now, if the Application itself (as opposed to Servlets) throws an exception, it doesn't get captured nicely. However, it is displayed in the app server's console.
+		<li> The exception handler is pretty nice and has features like logging, e-mail, gathering debugging info, etc. However, on occasions it can throw exceptions too. There should be a simpler, secondary exception handler for when this happens.
+		<li> Review the timestamp caching logic and its relation to .pyc files if any.
+		<li> AppServer: Servlets get reloaded when they are changed, but not the Servlets ancestor classes.
+		<li> Add "Last-modified:" to generic files that are served via WebKit.
+		<li> If a Python file has only one class that inherits from Servlet, then use that as the Servlet class (rather than requiring the name be the same as the file).
+
+		<!-- These have been discussed on the devel list prior to the 0.8 release. 
+		Expect to see these changing in the near future in CVS after the 0.8 release. -->
+
+		<li> Incoproate If-Modified-Since - addressed in patch 608957
+		<li> Adopt the code in NewThreadedAppServer as a new model for the ThreadedAppServer.
+		<li> Adopt the code in serverSideInfoForRequestNewAlgorithm in Application.
+		<li> Make ThreadeAppServer easily subclassed to allow for customization to AppServer behavior.
+		</ol>
+
+	<li> <b>Testing</b>
+		<ol>
+		<li> Provide testing web page where people can report their testing results including version numbers, etc.
+		<li> Provide higher level automation of testing. For example, a testing script should be able to launch various app servers multiple times.
+		<li> Provide highly automated benchmarking so we can track changes in performance.
+		<li> Expand the regression test suite.
+		</ol>
+
+	<li> <b>Docs</b>
+		<ol>
+		<li> Beef up the User's Guide.
+		<li> User's Guide: Create a caching section to discuss the virtues of doing so. Color example became 12 X faster on the server side.
+		<li> Create a tutorial.
+		<li> Docs: Provide links to 'pythondoc' generated documentation of the classes.
+		</ol>
+
+	<li> <b>Food for thought, considerations, reviews</b>
+		<ol>
+		<li> Consider this statement from the FastCGI docs: Redirects are handled similar to CGI.  Location headers with values that begin with "/" are treated as internal-redirects; otherwise, they are treated as external redirects (302).
+		<li> Consider if we need to support &lt;form action="x.py?a=1" method="POST"&gt; where you will have both a query string and posted data.
+		<li> Application modifies sys.path so that servlets can say "from SuperServlet import SuperServlet" where SuperServlet is located in the same directory as the Servlet. We'd prefer a more sophisticated technique which does not modify sys.path and does not affect other servlets. (Or maybe this would go away with a new one-process-per-application architecture.)
+		</ol>
+
+	<li> <b>Check out</b>
+		<ol>
+		<li> <a href=http://aquarium.sourceforge.net>Aquarium</a>
+		<li> <a href=http://www.zope.org/Members/Amos/WhatIsAcquisition>http://www.zope.org/Members/Amos/WhatIsAcquisition</a>
+		<li> <a href=http://www.zope.org/Members/jim/Info/IPC8/AcquisitionAlgebra/index.html>http://www.zope.org/Members/jim/Info/IPC8/AcquisitionAlgebra/index.html</a>
+		<li> <a href=http://www.x-works.com>http://www.x-works.com</a>
+		<li> FastCGI related: <a href=http://www.tfarmbruster.com/fcgi_sa.htm>http://www.tfarmbruster.com/fcgi_sa.htm</a>
+		</ol>
+
+	<li> <b>Down the road</b>
+		<ol>
+		<li> Multi-language support/localization (e.g., vend data to clients in their preferred written language)
+		<li> Consider CORBA standard RMI-IIOP and it's potential interaction with WebKit. This technology has been marked for inclusion in J2EE. I imagine the idea might be that an app server could be used by more than just web browsers. e.g., it could be used programmatically (in a more natural way than simulating a web client).
+		</ol>
+</ol>
+
+
+<p><hr>
+
+</body>
+</html>

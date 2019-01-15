@@ -1,0 +1,509 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	<style type=text/css>
+	<!--
+		th				{ font-family: Arial, Helvetica, sans-serif; font-size: smaller; text-align: left; }
+	-->
+	</style>
+	<title>MiddleKit User's Guide</title>
+</head>
+
+<body>
+
+<h1>MiddleKit User's Guide</h1>
+Version 0.8.1
+<br>Webware for Python 0.8.1
+
+
+<a name=ToC><h2>Table of Contents</h2></a>
+
+<p><span class=ToC>
+     <a href="#Synopsis"><font size=+1>Synopsis</font></a>
+<br> <a href="#DataTypes"><font size=+1>Data Types</font></a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#DT_BasicTypes">Basic Types</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#DT_DateTime">Date and time types</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#DT_Enums">Enumerations</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#DT_ObjRef">Object references</a>
+<br> <a href="#ModelFiles"><font size=+1>Model Files</font></a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#MF_Classes">Classes.csv</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#SampleData">Samples.csv</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#Configuration">Configuration</a>
+<br> <a href="#GeneratedPy"><font size=+1>Generated Python</font></a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#GP_addToBars">Lists: addToBars()</a>
+<br> <a href="#MiscTopics"><font size=+1>Miscellaneous Topics</font></a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#MT_DatabaseName">Database Name</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#MT_IteratingAttrs">Iterating over attributes</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#MT_DeletingObjects">Deleting objects</a>
+<br> &nbsp; &nbsp; &nbsp; <a href="#MT_DerivedAttributes">Derived attributes</a>
+<br> <a href="#ModelInheritance"><font size=+1>Model Inheritance</font></a>
+<br> <a href="#RelatedLinks"><font size=+1>Related Links</font></a>
+<br> <a href="#Credit"><font size=+1>Credit</font></a>
+<br> <a href="#ImpGuide"><font size=+1>Implementor's Guide</font></a>
+<br> <a href="#None"><font size=+1> Test Cases </font></a>
+</span>
+
+
+<a name=Synopsis><h2>Synopsis</h2></a>
+
+<p> MiddleKit provides an object-relational mapping layer that enables developers to write object-oriented, Python-centric code while enjoying the benefits of a relational database.
+
+<p> The benefits of Python include: generality, OOP (encapsulation, inheritance, polymorphism), a mature language, and many libraries, both standard and 3rd party.
+
+<p> The benefits of a relational database include: data storage, concurrent access and 3rd party tools (such as report generators).
+
+
+<a name=DataTypes><h2>Data Types</h2></a>
+
+<p> All attributes in an object model must be typed. MiddleKit divides types into 4 major categories:
+
+<ol>
+	<li> <a href=#DT_Basic>Basic types</a>
+	<li> <a href=#DT_DateTime>Date and time types</a>
+	<li> <a href=#DT_Enums>Enumerations</a>
+	<li> <a href=#DT_ObjRef>Object references</a>
+</ol>
+
+
+<a name=DT_BasicTypes><h3>Basic Types</h3></a>
+
+<p> The basic types are easy to work with and do what you expect. They are the same as the Python types with the addition of one special case: <code>bool</code>.
+
+<p> While MiddleKit is designed to be generic and therefore, database agnostic, concrete examples pay good dividends. So the following table includes the type equivalents for MySQL.
+
+<p> <table border align=center style="border-collapse: collapse" cellpadding=2>
+	<tr>
+		<th colspan=4 align=center> Basic Types </th>
+	<tr>
+
+	<tr>
+		<th> MiddleKit </th>
+		<th> Python </th>
+		<th> MySQL </th>
+		<th> Notes </th>
+	</tr>
+
+	<tr>
+		<td> bool </td>
+		<td> int </td>
+		<td> bool </td>
+		<td> Py int = 0 or 1 </td>
+	</tr>
+
+	<tr>
+		<td> int </td>
+		<td> int </td>
+		<td> int </td>
+		<td> &nbsp; </td>
+	</tr>
+
+	<tr>
+		<td> long </td>
+		<td> long </td>
+		<td> bigint </td>
+		<td> 64-bit int </td>
+	</tr>
+
+	<tr>
+		<td> float </td>
+		<td> float </td>
+		<td> double </td>
+		<td> 64-bit float </td>
+	</tr>
+
+	<tr>
+		<td> string </td>
+		<td> string </td>
+		<td> varchar <sup><font size=-1>(*)</font></sup> </td>
+		<td> &nbsp; </td>
+	</tr>
+</table>
+
+<p> <sup><font size=-1>(*)</font></sup> The MySQL type is <code>char</code> if the minimum and maximum length are equal.
+
+
+<a name=DT_DateTime><h3>Date and time types</h3></a>
+
+<p> MiddleKit supports types of date, time and datetime. With a default Python installation and MiddleKit, these are expressed as Python strings such as <code>'2001-02-27'</code>. If you have installed the <a href=http://www.lemburg.com/files/python/mxDateTime.html>mxDateTime</a> package, then these values will be expressed as instances of DateTime and DateTimeDelta.
+
+<p> With a default Python installation and MiddleKit, you can pass strings
+
+<p> <table border align=center style="border-collapse: collapse" cellpadding=2>
+	<tr>
+		<th colspan=4 align=center> Date/Time Types </th>
+	<tr>
+
+	<tr>
+		<th> MiddleKit </th>
+		<th> Python </th>
+		<th> MySQL </th>
+		<th> Notes </th>
+	</tr>
+
+	<tr>
+		<td> datetime </td>
+		<td> string/DateTime </td>
+		<td> datetime </td>
+		<td> &nbsp; </td>
+	</tr>
+
+	<tr>
+		<td> date </td>
+		<td> string/DateTime </td>
+		<td> datetime </td>
+		<td> &nbsp; </td>
+	</tr>
+
+	<tr>
+		<td> time </td>
+		<td> string/DateTimeDelta </td>
+		<td> time </td>
+		<td> &nbsp; </td>
+	</tr>
+</table>
+
+
+<a name=DT_Enums><h3>Enumerations</h3></a>
+
+<p> Enumerations are provided through the <a href=name>enum</a> type which is directly supported in MySQL. In Python, these enumerations are kept as case sensitive strings. The object model must specify the valid values of the enumeration. While that be done via a column named "Enums", this is more frequently specified in the "Extras" column, where less common attribute specs are usually placed:
+
+<center><code>Enums='red, green, blue'</code></center>
+
+
+
+<a name=DT_ObjRef><h3>Object references</h3></a>
+
+<p> There are two types of object references: a single reference and a list of references. In relational terminology, that would be "1 to 1" and "1 to many" respectively.
+
+<p> The type for a single reference in Python is indicated by simply naming the class of the object that can be referred to. That class must be defined in the object model and will therefore have it's own table in the database. User-defined classes are required to be capitalized (while other types are lower case). For example:
+
+<p> <table border align=center style="border-collapse: collapse" cellpadding=2>
+	<tr>
+		<th> Attribute </th>
+		<th> Type </th>
+	</tr>
+
+	<tr>
+		<td> address </td>
+		<td> Address </td>
+	</tr>
+
+	<tr>
+		<td> billingInfo </td>
+		<td> BillingInfo </td>
+	</tr>
+</table>
+
+
+<p> The type for a list of references is specified by <code>list of <i>ClassName</i></code> and represents the 1-to-many relationship. This will be an ordinary Python list, except that some invisible MiddleKit machinery in the background will perform various services (fetch objects on demand, insert new objects, etc.). For example:
+
+<p> <table border align=center style="border-collapse: collapse" cellpadding=2>
+	<tr>
+		<th> Attribute </th>
+		<th> Type </th>
+	</tr>
+
+	<tr>
+		<td> contacts </td>
+		<td> list of Contact </td>
+	</tr>
+
+	<tr>
+		<td> customers </td>
+		<td> list of Customer </td>
+	</tr>
+</table>
+
+<p> There are two additional properties that applies to attributes whose types are object references.
+
+<p> For the purpose of discussion, the object containing the attribute is <i>self</i> while the objects being referred to are the <i>others</i>. Now then, the <b>onDeleteSelf</b> property specifies what happens to the other object(s) when the self object is deleted:
+
+<ol>
+	<li> deny - do not allow self to be deleted
+	<li> cascade - also delete other when self is deleted
+	<li> detach - allow self to be deleted with no effect on other (this is the default)
+</ol>
+
+<p> There is a similar property <b>onDeleteOther</b> which specifies what happens to the self object when the other object(s) is deleted:
+
+<ol>
+	<li> deny - do not allow other to be deleted (this is the default)
+	<li> cascade - also delete self when other is deleted
+	<li> detach - allow other to be deleted, and set the reference attribute in self that referred to other to None
+</ol>
+
+<p> The default value of onDeleteSelf is detach, and the default value of onDeleteOther is deny.  In other words, by default, you can delete an object which <i>references</i> other objects, but you can't delete an object which is <i>referenced by</i> other objects.  An example specification would be <code>onDeleteOther=cascade</code>.
+
+<p> Note: onDeleteSelf can also be specified for "list of reference" attributes, where it has the same effect as it does when applied to reference attributes.
+
+<a name=ModelFiles><h2>Model Files</h2></a>
+
+<a name=MF_Classes><h3>Classes.csv</h3></a>
+
+<p> This is the object model where classes and attributes are defined. See the <a href=QuickStart.html>Quick Start</a> for an example.
+
+
+<a name=SampleData><h3>Samples.csv</h3></a>
+
+<p> This is an optional file containing sample data for the model. See the <a href=QuickStart.html>Quick Start</a> for an example.
+
+<p> Note that a blank field in the samples will be substituted with the default value of the attribute (as specified in the object model, e.g., <span class=filename>Classes.csv</span>). To force a None value (NULL in SQL), use 'none' (without the quotes).
+
+
+<a name=Configuration><h3>Configuration</h3></a>
+
+<p> An MK model can have configuration files inside it that affect things like code generation.
+
+<p> <span class=filename>Settings.config</span> is the primary configuration file.
+
+<p> The <span class=name>Package</span> setting can be used to declare the package that your set of middle objects are contained by. This is useful for keeping your middle objects packaged away from other parts of your programs, thereby reducing the chances of a name conflict. This is the recommended way of using MK.
+
+<p> An example <a name=filename>Settings.config</a>:
+
+<pre>{
+    'Package': 'Middle',
+}</pre>
+
+<p> Your code would then import classes like so:
+
+<pre class=py>from Middle.Foo import Foo
+</pre>
+
+<p> Don't forget to put an <span class=filename>__init__.py</span> in the directory so that Python recognizes it as a package.
+
+
+<p> The <span class=name>SQLLog</span> setting can be used to get MiddleKit to echo all SQL statements to 'stdout', 'stderr' or a filename. For filenames, an optional 'Mode' setting inside SQLLog can be used to write over or append to an existing file. The default is write. Here are some examples:
+
+<pre>{
+    'SQLLog': { 'File': 'stdout' },
+}</pre>
+
+<pre>{
+    'SQLLog': { 'File': 'middlekit.sql' },
+}</pre>
+
+<pre>{
+    'SQLLog': { 'File': 'middlekit.sql', 'Mode': 'append' },
+}</pre>
+
+
+<p> The <span class=name>Database</span> setting overrides the database name, which is otherwise assumed to be same name as the model. This is particularly useful if you are running two instances of the same application on one host.
+
+<pre>{
+    'Database': 'foobar',
+}</pre>
+
+
+<p> The <span class=name>DeleteBehavior</span> setting can be used to change what MiddleKit does when you delete objects.
+The default behavior is "delete" which means that objects are deleted from the SQL database when they are deleted from the MiddleKit object store.
+But setting DeleteBehavior to "mark" causes an extra SQL datetime column called "deleted" to be added to each SQL table, and records that are deleted from the object store in MiddleKit are kept in SQL tables with the deleted field set to the date/time when the object was deleted.
+This setting has no effect on the visible behavior of MiddleKit; it only changes what happens behind the scenes in the SQL store.
+
+<pre>{
+    'DeleteBehavior': 'mark',
+}</pre>
+
+<p> The <span class=name>SQLConnectionPoolSize</span> setting is used to create a <a href=../../MiscUtils/Docs/index.html>MiscUtils</a>.DBPool instance for use by the store. For DB API modules with a threadsafety of only 1 (such as MySQLdb), this is particularly useful (in one benchmark, the speed up was 15 - 20%). Simply set the size of the pool in order to have one created and used:
+
+<pre>{
+	'SQLConnectionPoolSize': 20,
+}</pre>
+
+<p> The <span class=name>UsePickledClassesCache</span> setting defaults to 1 and causes MiddleKit to cache the <span class=filename>Classes.csv</span> text file as a binary pickle file named <span class=filename>Classes.pickle.cache</span>. This reduces subsequent load times by about 40%. The cache will be ignored if it can't be read, is older than the CSV file, has a different Python version, etc. You don't normally even need to think about this, but if for some reason you would like to turn off the use of the cache, you can do so through this setting.
+
+<p> <span class=filename>SQLGenerator.config</span> has one setting: <span class=name>DropStatements</span> whose potential values are:
+
+<ul>
+	<li> database - This causes a DROP DATABASE to be used in <span class=filename>Create.sql</span>. This is the cleanest way to handle models and also the default.
+	<li> tables - This assumes the database already exists and does a DROP TABLE for each table in the model. There is a small danger here that if you remove a class from a model, then its old SQL table will remain in the database. The main use for this setting is for database servers that are slow creating new databases. One user reported a 1 minute lag for Microsoft SQL Server 2000, which is too much of a lag when running the test suite.
+</ul>
+
+<p> An example <a name=filename>SQLGenerator.config</a>:
+
+<pre>{
+    'DropStatements': 'database',  # database, tables
+}</pre>
+
+
+<a name=GeneratedPy><h2>Generated Python</h2></a>
+
+<a name=GP_addToBars><h3>Attributes: foo() and setFoo()</h3></a>
+
+<p> For each attribute, foo, MiddleKit stores its value in the attribute _foo, returns it in the accessor method foo() and allows you to set it with setFoo(). You should always use foo() to get the value of an attribute, as there could be some logic there behind the scenes.
+
+
+<a name=GP_addToBars><h3>Lists: addToBars()</h3></a>
+
+<p> Given an attribute of type list, with the name "bars", MK will generate a Python method named addToBars() that will make it easy for you to add a new object to the list:
+
+<pre class=py>newBar = Bar()
+newBar.setXY(1, 2)
+foo.addToBars(newBar)
+</pre>
+
+<p> This method actually does a lot more for you, ensuring that you're not adding an object of the wrong type, adding the same object twice, etc. Here is a complete list:
+
+<ul>
+	<li> assert newBar is not None
+	<li> assert newBar inherits from Bar
+	<li> assert newBar is not already in bars
+	<li> add newBar to bars
+	<li> add newBar to foo's object store, if needed
+	<li> set newBar's foo-reference to foo
+</ul>
+
+<p> You don't have to remember the details since this behavior is both supplied and what you would expect. Just remember to use the various addToBars() methods.
+
+<p> Not setBars() method is provided for list typed attributes.
+
+
+<a name=MiscTopics><h2>Miscellaneous Topics</h2></a>
+
+<a name=MT_DatabaseName><h3>Database Name</h3></a>
+
+<p> MiddleKit uses the name of the store as the name of the database. This works well most of the time. However, if you need to use a different database name, there are two techniques available:
+
+<p> 1. You can specify the 'Database' setting in <span class=filename>Settings.config</span>. See <a href=#Configuration>Configuration</a> for an example.
+
+<p> 2. You can pass the database name via the object store's constructor arguments, which are then passed on to the DB API module. This technique overrides both the default model name and the model settings. For example:
+
+<pre class=py>store = MySQLObjectStore(db='foobar', user='prog', passwd='asdklfj')
+</pre>
+
+<a name=MT_IteratingAttrs><h3>Iterating over attributes</h3></a>
+
+<p> Every once in a while, you might get a hankering for iterating over the attributes of an MK object. You can do so like this:
+
+<pre class=py>for attr in obj.klass().allAttrs():
+	print attr.name()
+</pre>
+
+<p> The klass() method seen above, returns the object's MiddleKit Klass, which is the class specification that came from the object model you created. The allAttrs() method returns a klass' list of attributes.
+
+<p> The attributes are instances of MiddleKit.Core.Attr (or one of its subclasses such as ObjRefAttr) which inherits from UserDict and acquires additional methods from mix-ins located in MiddleKit.Design and MiddleKit.Run. Since attributes are essentially dictionaries, you can treat them like so, although if you modify them you are asking for serious trouble.
+
+<pre class=py>for attr in obj.klass().allAttrs():
+	keys = attr.keys()
+	keys.sort()
+	print '%s: %s' % (attr.name(), keys)
+</pre>
+
+<p> If you had asked the klass for its attrs() instead of allAttrs(), you would have missed out on attributes that were inherited.
+
+<p> If you want to get a dictionary of all the attribute values for a particular object, don't roll your own code. You can already ask your middle objects for allAttrs(), in which case you get values instead of definitions (which is what Klass returns for allAttrs()).
+
+<a name=MT_DeletingObjects><h3>Deleting objects</h3></a>
+
+<p> If you need to delete an object from the object store, you can do so like this:
+
+<pre class=py>store.deleteObject(object)
+</pre>
+
+<p> As with other changes, the deletion is is not committed until you perform store.saveChanges().
+
+<p> This may raise one of these two exceptions defined in MiddleKit.Run.ObjectStore:
+
+<ul>
+	<li> <b>DeleteReferencedException</b> - This is raised when you try to delete an object that is referenced by other objects.  To avoid this exception, either make sure that there are no other objects referencing an object before you try to delete it, or change the onDeleteOther property of the reference attribute to detach or cascade.
+	<li> <b>DeleteObjectWithReferencesError</b> - This is raised when you try to delete an object that references other objects, with a reference attribute that has the property onDeleteSelf=deny.  To avoid this exception, either set the reference to None before deleting, or switch to a different setting for onDeleteSelf on the reference attribute.
+</ul>
+
+<p> See <a href="#DT_ObjRef">Object references</a> for the specifications of onDeleteSelf and onDeleteOther.
+
+
+<a name=MT_DerivedAttributes><h3>Derived attributes</h3></a>
+
+<p> Sometimes it can be convenient to define an attribute in MiddleKit that does not exist in the SQL database back end.
+Perhaps you want to compute the value from other attributes, or store the value somewhere else outside of the SQL database.
+Yet you still want to be able to iterate over the attribute using the allAttrs() method provided in MiddleKit.
+
+<p> To do this, simply set the property <b>isDerived</b> on the attribute in the model file.
+You will have to write your own setter and getter methods for the attribute.
+
+
+<a name=ModelInheritance><h2>Model Inheritance</h2></a>
+
+<p> Model inheritance is an advanced feature for developers who wish to reuse models in other projects that are also model based. In Settings.config, you can specify other models to inhert class definitions from, which are termed <i>parent models</i>:
+
+<pre>{
+    'Inherits': ['/usr/lib/mkmodels/News', 'Users'],
+}</pre>
+
+<p> Note that the <b>.mkmodel</b> extension is assumed. Also, relative filenames are relative to the path of the model inheriting them.
+
+<p> The essential effect is that the classes found in parent models are available to instantiate, subclass and create sample data from, and are termed <i>inherited classes</i>. You can also redefine an inherited class before using it in other class declarations. Classes are identified strictly by name.
+
+<p> The resolution order for finding a class in a model that has parent classes is the same as the <a href=http://www.python.org/2.2/descrintro.html#mro>basic method resolution order in Python 2.2</a>, although don't take that mean that MiddleKit requires Python 2.2 (it requires 2.0 or greater).
+
+<p> Model inheritance does <b>not</b> affect the files found in the parent model directories. Also, settings and sample data are not inherited from parents; only class definitions.
+
+<p> In MiddleKit.Core.Model, the methods of interest that relate to model inheritance are klass(), which will traverse the parent model hierarchy if necessary, and allKlassesInOrder() and allKlassesByName(). See the doc strings for more info.
+
+<p> Caveats:
+
+<ul>
+	<li> Suppose model B inherits model A and that A has a class Base. If B wants to redefine Base and classes that inherit from it, the redefinition should come first:
+<pre>	Class Attr Type
+	Base
+	      b    int
+	Sub(Base)
+	      c    int
+</pre>
+
+	<p> If instead, B declares Sub first, then it will erroneously pick up the Base from A.
+
+	<li> A model cannot define a class such as "Foo(Foo)" where a given class is overridden, but inherited by the override. This could be useful for adding additional attribute definitions to an existing class.
+
+	<li> Although the "diamond of inheritance" situation has been accounted for, using ideas from Python 2.2, it is not yet covered by the test suite.
+
+	<li> "Infinite inheritance", where there is a cycle in inheritance, is not specifically caught.
+
+</ul>
+
+
+<a name=RelatedLinks><h2>Related Links</h2></a>
+
+<p> The topic of object-relational mapping (ORM) is an old one. Here are some related links if you wish to explore the topic further:
+
+<p> Scott Ambler has written some papers on the topic of ORM and also maintains a set of ORM related links:
+
+<ul>
+	<li> <a href=http://www.ambysoft.com/mappingObjects.html>Mapping Objects to Relational Databases</a>
+	<li> <a href=http://www.ambysoft.com/persistenceLayer.html>The Design of a Robust Persistence Layer for Relational Databases</a>
+</ul>
+
+<p> Apple has a very mature (and perhaps complex) ORM framework named Enterprise Objects Framework, or EOF, available in both Java and Objective-C. All the docs are online at the WebObjects page:
+
+<ul> <li> <a href=http://developer.apple.com/techpubs/webobjects/webobjects.html>WebObjects Developer Documentation</a> </ul>
+
+<p> The only other Python ORM that we're aware of is dbObj by Boudewijn Rempt:
+
+<ul> <li> <a href=http://www.xs4all.nl/~bsarempt/python/dbobj.html>dbObj</a> </ul>
+
+<p> Here's a Perl ORM that someone recommended as interesting:
+
+<ul> <li> <a href=http://www.soundobjectlogic.com/tangram/fs.html>Tangram</a> </ul>
+
+
+<a name=Credit><h2>Credit</h2></a>
+
+<p> Authors: Chuck Esterbrook
+
+
+<a name=ImpGuide><h2>Implementor's Guide</h2></a>
+
+<p> @@ 2000-10-28 ce: This should be a separate guide.
+
+
+<h2> Test Cases </h2>
+
+<p> In the Tests directory of MiddleKit you will find several test case object models.
+
+<p> @@ 2001-02-13 ce: complete this
+
+
+<p><hr>
+
+</body>
+</html>

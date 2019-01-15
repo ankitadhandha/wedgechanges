@@ -1,0 +1,517 @@
+MiddleKit
+TO DO
+
+
+<overview>
+<major functionality>
+<refinements/improvements>
+<web browser>
+<subtle>
+<misc>
+<bugs/flaws>
+<clean up/very minor>
+<testing>
+<docs>
+<investigate>
+
+
+<overview>
+
+MiddleKit is currently in alpha, which means that there's still a lot of work to do. This TO DO list is 7 pages long and most people won't want to read the entire thing, so this overview gives a quick intro to the current state of things:
+
+Here are some important things MK already has:
+
+	* MK supports MySQL fairly well. MySQL is the database that I (Chuck Esterbrook) developed it with.
+
+	* MK handles object models, inserts, updates, object references and lists very well.
+
+	* MK has a nice regression test suite that is growing.
+
+	* MK has fairly good documentation.
+
+* What's missing:
+	* Support for other databases especially:
+		- PostgreSQL
+		- MSSQL (started, but not finished)
+		- Oracle
+	* The web interface, MKBrowser, does NOT include:
+		- searching
+		- editing
+		- browsing objects in batches
+	* Functionality:
+		- distinct lists (search for distinct lists below)
+		- deleting objects
+	* There are numerous refinements and improvements to be made. They are listed in detail in other sections below.
+
+I'm the chief architect and implementor of MiddleKit. Being intimately familiar with it puts me in the best position to provide enhancements to the object store.
+
+What I would like most from other contributors are:
+	* Support for additional databases
+	* Improvements to the web interface
+
+But feel free to contribute in other areas as you see the need.
+
+I'll be happy to support anyone's efforts by answering questions, discussing ideas, reviewing code, etc.
+
+If you have general comments or questions or contributions, please contact webware-discuss@lists.sourceforge.net.
+
+</overview>
+
+
+<major functionality>
+
+	[ ] Distinct lists: An object such as "Video" cannot have a directors and writers attribute that are both typed "list of Person". Might want to review UML relationships before calling the deal on this.
+
+	[ ] Support defaults in both Python code gen and SQL code gen
+		in python __init__()
+		in sql  DEFAULT <value>
+
+	[ ] PostgreSQL support
+
+	[ ] Support "list of string" as a special type, StringListAttr. Implement as string with max length (4B), which is pickled. Or maybe "list of atom/thing" which could be int, float, long, string or any other small structure that is easily pickled
+		Or just support a "pickle" type and let people do whatever they want.
+
+	[ ] support binary data in two ways:
+		* allow for it and bring it in as a string
+		* allow for a class to be defined that will be instantiated with the binary data
+
+	[ ] Threads: MK objects are not thread safe.
+
+	[ ] ListAttr: how about an extendBars() to complement addToBars()?
+
+	[ ] Provide a fetch mode that still creates the correct objects, but only fetches their serial number. Upon accessing any attribute, the attributes are then fetched from the database. This would allow for fetching a large set of objects without taking a big hit up front.
+
+	[ ] When reading the object model, report the line number for errors.
+
+	[ ] Support multiple inheritance.
+
+	[ ] Experiment with the idea of a MiddleKit that does not generate any Python code (other than the stubs). All operations are handled entirely at run time.
+
+	[ ] Support locking and unlocking of objects.
+
+	[ ] When we support object proxies, e.g., objects that exist, but haven't fetched their attribute values from the persistent store yet, then we should also support invalidating those objects.
+
+</major functionality>
+
+
+
+<refinements/improvements>
+
+	[ ] MySQL: Can refer to classId column as literally '_rowid'.
+	
+	[ ] deleting: If you delete an object that is in some other object's list which is also in memory at the time, the list in question is not updated.
+
+	[ ] A subtle issue with deleting objects requires a saveChanges() repeated times. I inquired with Geoff T who wrote:
+
+		This is tricky.  I think what happens is that store.deleteObject() ends up
+		calling store.fetchObjectsOfClass() somewhere a few levels deep inside of its
+		reference-checking code.  That method always reloads the fields from SQL,
+		wiping out local changes (I think).
+
+		If there were a flag to fetchObjectsOfClass() that could say "but if the
+		objects are already in memory, don't reload their values from SQL" that would
+		help.  In fact, maybe that should be the standard behavior?  The problem is,
+		what do you do with SQL clauses passed in to fetchObjectsOfClass()?  You
+		can't exactly apply them to objects in memory without writing a SQL parser in
+		Python.
+
+		Also see the comment in MiddleObject.referencingObjectsAndAttrs().
+
+	[ ] fetchObject*() refreshes the attributes of the objects in question, even if they were modified. eg, you could lose your changes
+
+	[ ] "set" methods for strings don't raise an exception when the min or max length boundaries are violated.
+
+	[ ] Use a persistent connection per thread.  You can get the name of the current thread with threading.currentThread().getName() and you can use that as a dictionary key into a global dictionary of connections. [per Geoff T]
+
+	[ ] Combine SQLGenerator.config into Settings.config.
+
+	[ ] optimization: we use unsigned ints for serial numbers in the database. Since they exceed the high end of a signed int in Python, they end up selected as longs, which are slower than ints. We should probably leave the SQL signed. 2 billion objects for one class is plenty for most apps.
+
+	[ ] implement model inheritance so that test cases can inherit other test case models
+
+	[ ] implement a test that spawns threads and hits the store hard enough to break the connection reuse problem
+
+	[ ] resolve issues about setting a MiddleObject's store
+	- this needs to be resolved really soon
+		- review EOF
+		- consider initialization for new objects as well as awakeFromRead()
+		- consider that objects should never switch stores
+			- add an assertion for that
+
+	[x] For MSSQL per Dave:
+		- Need to have an option for create, not to drop the database. This takes too long on MSSQL
+		- Since we're not dropping the DB, we need to drop the tables. They should be dropped in reverse order because:
+			1. that's good shut down policy
+			2. REF feature requires that
+
+	[x] Make sure that when a store fetches objects that the objects point back to that store and not to the global store.
+
+	[x] Per Dave Rogers (and I agree), isRequired should default to 0, not 1.
+
+	*** [ ] Use the upcoming MiscUtils.unquoteForCSV() for InsertSamples (and DataTable).
+
+	[ ] The documentation generation for Webware doesn't pick up on MiddleKit very well, which is the first component to have subpackages (and mix-ins!).
+
+	[ ] Other useful 'LogSQL' options:
+			prefix (='SQL')
+			includeNumber (=1)
+			includeTimestamp (=1)
+		By turning those off, you would have straight SQL file you
+		could feed to the database.
+
+	[ ] MK should add back pointers as necessary (like for lists). Right now the modeler has to make sure they are there. This also ties into the "distinct lists" problem, so you might wish tackle these simultaneously.
+
+	[ ] Investigate dbinfo.py: http://www.lemburg.com/files/python/dbinfo.py
+
+	*** [ ] Prior to inserting or updating an object in the store, validate the requirements on it's attributes.
+		- review EOF's validation policies
+			- EOValidation protocol
+			"For more discussion of this subject, see the chapter “Designing Enterprise Objects” in the
+Enterprise Objects Framework Developer’s Guide, and the EOEnterpriseObject informal protocol
+specification."
+
+		- should the accessor assertions be inside a different method? That way you could validate a value for an attribute without necessarily having to set it. The default implementation could invoke self.klass().attr('name').validate(value). Subclasses could override, invoke super, and perform additional checks.
+		- Generated code:
+			def validateNAME(self, value):
+				self.klass().attr('NAME').validate(value)
+		- MiddleObject
+			def validateNamedValue(self, name, value):
+				# ?? really need this?
+				return validateNAME(value)
+			def validateForSave(self):
+				# is this for loop necessary?
+				for attr in self.klass().allAttrs():
+					self.validateNamedValue(attr.name(), self._get(attr.name()))
+			def validateForDelete(self):
+				pass
+			def validateForUpdate(self):
+				self.validateForSave(self)
+			def validateForInsert(self):
+				self.validateForSave(self)
+
+
+	[x] support "not null" in SQL. e.g. if isRequired: then add NOT NULL.
+
+	[ ] SQL store: allow connection info to be passed in connect(). e.g., don't require it in __init__
+
+	[ ] We should be able to hand a SQL object store its database connection, rather than it insisting that it create it itself.
+
+	[ ] addToBars() will add the target to object store if needed. Does setBar()? If not, make it so.
+
+	[x] SQL code gen: use a primary key instead of a unique index
+
+	*** [ ] what is the policy for setInt, setLong, setFloat, setString, etc.? Do we assert the type or do a type conversion with int(), float(), etc.
+		- I think we assert the type, except for numbers we may allow coercion, especially if Python's coerce() helps out in this area
+
+	[ ] Standardize the parameters names that SQLStore.connect() takes. host, user, password
+
+	[x] Create.sql: Drop the drop statements. Not needed.
+
+	[ ] Improve Resources/Template.mkmodel.
+
+	[ ] Test that we can use NamedValueAccess. Reconcile this with _get and _set. Make sure that this all works when the getter and setter methods can be customized.
+
+	[ ] In Classes.csv, provide an option for an attribute not to be archived. Accessors and type checking would still be provided.
+
+	[ ] Should MK also cover methods (it already does attributes)? Review UML.
+
+	[ ] put types in for headings of classes.csv. Create "defaultTypes" feature for DataTable
+
+	[ ] standardize the DB API connection args?
+		If so, consider that MySQL takes some extra args:
+			port, unix_socket, client_flag
+
+	[x] In sample code generation, do all deletes first, one time for each table. That way you can have multiple groups of objects
+
+	*** [ ] enforce min and max for attributes in generated python
+
+	[ ] Error checking: Classes.csv: the default value is a legal value. (for example, if type is int, the default must be a number. If type is enum, must be a legal enum.)
+
+	[ ] Consider breaking obj refs in the SQL tables into two fields so that non-MK entities, like stored procedures, can have a fighting chance of using them.
+		- is it confusing that each table (for a class) has a column "meId" which is only the serial number AND columns that are obj refs to other objects are also prefixed with Id even though they are 64-bit 2 element tuples
+		- one problem is that the programmer might be using server side queries.
+			- 'where userId=%s' % user.sqlObjRef()
+			- 'where userClass=%s and userId=%s' % (user.klass().id(), user.serialNum())
+		- can genericize this so that the technique could actually be changed, through configuration, without affecting code?
+		def fetchObjectsOfClass(self, aClass, clauses='', isDeep=1):
+		def fetchObjectsOfClass(self, aClass, query=None, clauses='', isDeep=1)
+			- what is query?
+			- something that gets translated to a WHERE clause
+			- might look different depending on the way MK has translated the obj model to SQL
+				- best example is obj references:
+					- 64-bit combo.
+					- 2 columns
+				- need full fledged grammar?
+					- parens, and, or, comparison
+		- 'where %s' % store.sqlMatchObjRef('user', user)
+
+	[ ] Optimization: Prefetching: Have a parameter for whether object refs should be selected in the original query or delayed/as needed (like we do now). Combine the selects into a single join and then spread the attribs out over all objects.
+
+	[ ] abstract classes
+		- sample data: give an error immediately if the user tries to create sample data for an abstract class
+		- python code: don't allow instantiation of
+
+	[ ] Do more error checking upon reading the model
+		- attribute names required
+		- type names required
+		- show line number
+
+	[ ] With "list of SomeClass", there is no error reported if SomeClass does not exist
+
+	[ ] MiddleKit already partially handles dangling ObjRefs by just pretending
+they are None, but it still complains if the klass ID is invalid.  MK should
+ also handle dangling klass IDs gracefully. [per Geoff T]
+
+	[ ] Change Samples*.csv convention to Sample*.csv; also print the names of each sample file as it is being processed so the user realizes that multiple files are picked up
+
+	[ ] are any awake() methods appropriate?: fetch, insert
+
+	[ ] We could possibly provide a WebKit servlet factory for *.mkmodel. Actually, I don't know if WebKit likes servlet factories that match directories rather than files. Never tried it before.
+
+	[ ] The object model doesn't allow specification as to whether or not accessor methods, such as the getter and setter, should be provided.
+
+	[ ] Allow the object model to specify an index for a particular attribute
+
+	[ ] Should the __init__ methods in generated code allow for dictionaries and/or keyword arguments to initialize attributes with?
+
+	[ ] (per Dave R) fault tolerance: If the database connection goes down, re-establish it.
+
+	[ ] SQL supports macroscopic operations on columns such as MIN, MAX, AVG, etc. that are fast. MK ObjectStore and company should provide an interface that can tap into this power, while still maintaining independence from SQL (for the interface, not the implementation) and while supporting inheritance.
+
+	[ ] error checking: validate that class names and attribute names are valid
+
+	[ ] Should __setattr__ invoke willChange() when changes really occur so that willChange() can be come a hook for subclasses (for example, to implement notifications which could then be used in a GUI environment)?
+
+	[ ] A potential optimization to help speed start up would be to pickle the Model inside the .mkmodel directory and use that pickle file in place of the .csv (provided the .csv mtime was older). We could do this silently similar to .pyc files. Note that the only speed up here is in start up time.
+	
+	[ ] It would make more sense if the Float type spewed a SQL decimal type in response to having "precision" and "scale" attributes. Then axe DecimalAttr (or at least deprecate it).
+
+</refinements/improvements>
+
+
+
+<web browser>
+
+	[ ] Weird problem with model filename cookies
+	[ ] Edit a record, insert, delete, etc.
+
+	[ ] Rename MixIns to something like Core/RunMixIns.
+	[ ] Keep a list of recent models, database, etc.
+	[ ] Show classes by inheritance
+	[ ] Sort by a column (like a given attribute)
+	[ ] Parameterize what form is presented for connection (in order to support non-SQL stores)
+	[ ] Test with WebKit.cgi
+	[12-17] Can't click on lists
+	[11-28] Put everything in styles
+	[11-27] Nice banner for MiddleKit
+	[11-27] fix up the model and database selection.
+	[11-27] Parameterize the database connection info.
+
+</web browser>
+
+
+
+<subtle>
+
+	[ ] Can the Core classes really be passed as args to a model? e.g., are they really parameterized? (I wrote code in this direction.) If so, a test case needs to be created.
+
+	[ ] obj ref attrs have a setFoo() method that accepts values of type long because those are what comes out of the database. But that also means that a programmer could mistakenly do that at run time. This isn't a _huge_ priority since most programmers don't work with longs all that often.
+
+	[ ] Having truly independent lists (like list of new cars and list of old cars) requires a special join table be defined. That's too relational. MK should take care of this for you.
+
+	[ ] Consider if klassForId should be in the model rather than the store. Is this really store specific? Perhaps the concept of a serial number for every class is OK for every type of store.
+
+	[ ] The Klass serial nums should stay consistent, especially if you rearrange them and regenerate code.
+
+</subtle>
+
+
+
+<misc>
+
+	[ ] Review @@ comments in the source code.
+
+</misc>
+
+
+
+<bugs/flaws>
+
+	[ ] When I go fetchObject(WebUser,id) WebUser is an abstract class - both KaiserUser and CustomerContact inherit from it. Well, I get an error where you select from the CustomerContact table with a where clause of webUserID = 1 - but there is no web user ID, just customer contact id...
+
+	[ ] Fix float(8,8) limitation. Consider also the use of decimal. Should that be covered by float?
+
+	[ ] try exec*() instead of os.system in metatest.py to address the "exit status is always 0" problem
+
+</bugs/flaws>
+
+
+
+<clean up/very minor>
+
+	*** [ ]  Rename store.clear() to store.clearCachedObjects()
+		- Also, assert that there are no outstanding changes. Maybe:
+			assert not self.isChanged()
+
+	[x] Convert all uses of _NoDefault to MiscUtils.NoDefault
+
+	*** [ ] rename initFromRow() to readRow() or something
+
+	[ ] Renames:
+		- klassId to klassSerialNum
+		- change MKClassIds table to KlassSerialNums
+		- id() to serialNum()
+
+	[x] What's up with _Info.text filename? from SQLGenerator
+
+	[ ] Attr's init dict takes a 'Name'. So should Klass.
+
+	[ ] Consider use "id" instead of "someClassId" for the identity column.
+
+	[x] Do we still use Core/NULL.py?
+
+</clean up/very minor>
+
+
+
+<testing>
+
+	[ ] Settings.config: Package
+
+	[ ] ObjectStore.object()
+
+	[ ] We should pass the store into the test() function instead of requiring:
+		from MiddleKit.Run.ObjectStore import Store as store
+
+	[ ] Now that we have configuration files (at least SQLGenerator.config) we need to run the entire test suite through all configuration options.
+
+	[ ] The Videos model from the tutorial should be included in the automatic, regression test suite.
+
+	[ ] Add a test where certain columns in the object model are not required: Min, Max
+
+	[ ] Add a test where a model can be constructed in memory and then used to generate and use SQL and Python (like UserKit's test suite does)
+
+	[ ] Update all the tests to use _get() and _set() (instead of directly using the accessor methods).
+
+	[ ] MKInheritance: Test inherited attributes for proper updates
+
+	[ ] We should probably drop each test database at the end of the test.
+
+	ObjRef tests
+	------------
+		[x] Simple
+		[ ] Self reference
+		[ ] Inheritance
+		[ ] w/ abstract classes
+		[ ] Circular references
+
+	[ ] Test case: Create store. Destroy the store. Create again. Destroy again. All in the same process.
+
+	[ ] testing: support some kind of config file so it's easy to change:
+		- the line that creates the db and loads the sample data
+		- the DB API module and connection info
+
+	[ ] I think we already have this: make sure there is a test for it:
+		support relationships where the name of the referencing attribute is not the same as the type of object being pointed. A good example is the 'manager' attribute of an employee. It will point to another employee. So the type still matches (e.g., the type 'Employee' matches the name of the table), but the foreign key and primary key have different names.
+
+	[ ] test that sample data with values out of the min/max range are flagged by MK
+
+</testing>
+
+
+
+<docs>
+
+	[ ] Teach Settings.config and packaging MiddleObjects in the QuickStart guide.
+
+	[ ] Create a "Using MK with WK" section or document.
+
+	[ ] create an architecture document for developers
+
+	[ ] update doc strings
+
+	[ ] attributes can be commented out with #
+
+	[ ] Add this: MiddleKit could performs it's special functions (such as automatic fetches) by special use of __getattr__ rather than generating Python source code for the accessor methods. The reason why the latter technique was chosen, was so that "raw attributes" could be examined and manipulated if needed. A good example of this use is in the MiddleKit web browser, which does not unpack obj refs until you click on them, but still needs to display their value.
+
+	Document assertions for setFoo() where foo is an obj ref.
+
+	Add not about perusing the attributes of an object:
+		# Get me my page!
+		page = store.fetchObjectsOfClass(WebPage, sqlQualifier='where name=%r' % name)
+
+		# Suck in the MK attributes!
+		for attr in page.klass().allAttrs():
+			name = attr.name()
+			getMethod = getattr(page, name)
+			value = getMethod()
+			setattr(self, name, '_'+value)
+
+
+	[ ] Add a credit for Dave R for being an early adopter, user and tester of MK.
+
+	MiddleKit provides an object-relational mapping layer that enables developers to write object-oriented, Python-centric code while enjoying the benefits of a relational database.
+
+	The benefits of Python include: generality, OOP (encapsulation, inheritance, polymorphism), a mature language, and many standard and 3rd party libraries.
+
+	The benefits of a relational database include: data storage, concurrent access and 3rd party tools (such as report generators).
+
+	Benefits of middle kit:
+		- focus in on middle tier
+			- invest more time in designing your objects
+		- assertions
+			- type checking
+			- range checking
+			- required checking
+		- persistence to SQL database
+			- use SQL tools:
+				- sql interactive prompt
+				- sql gui front ends
+				- sql web front ends
+				- sql reporting tools
+			- SQL independence, switch databases later. DBI API 2.0 does NOT offer this.
+		- provide a form of precise documention
+			- classes.csv clearly shows what information you are tracking
+
+	[ ] Review all these "Done" items to make sure they are covered in the docs:
+		[11-25] Support defaults
+		[11-25] Improve precision of floats
+		[11-25] Support lists
+		[11-24] Sample data: support obj refs, bool TRUE & FALSE, ...
+		[11-24] Testing: support TestEmpty.py and TestSamples.py
+		[11-23] Support obj refs.
+		[11-12] Support \n stuff
+		[11-12] MKStrings: for string type, use the right MySQL text type given the maximum length
+		[11-11] NULL becomes isRequired, defaults to 1
+		[11-11] enforce NULL requirements
+		[11-11] load NULLs for blanks
+
+		[10-20] Gave enumeration values their own column.
+		[10-20] Added Extras column
+		[10-19] Kill char type
+		[10-19] Got rid of willChange().
+		[10-19] Generate should be a class.
+		[10-19] generate: required a command line arg to specify the database such as MySQL.
+		[10-19] Spit out PythonGenerator and MySQLPythonGenerator.
+		[10-19] Fixed up names of classes.
+		[10-14] Fixed test suite for "run" to use generated code from "design".
+		[10-14] CodeGenAdapter and ObjectStore inherit from Core.ModelUser to which common code has been moved.
+		[10-14] More restructuring and improvements.
+		[10-14] Mix-ins can handle a class hierarchy now.
+		[10-13] Big restructuring and improvements. Code is more OOPish and easier to maintain.
+		[10-11] bigint/longint is now "long" as in Python
+		[10-11] Substantial doc updates
+		[10-08] Can pass 'where' clause to fetchObjectsOfClass()
+		[10-08] Uniquing
+		[10-07] Implemented fetchObjectsOfClass()
+		[10-06] fetch an object of a particular class and serial number
+		[10-06] make set up easier
+		[10-06] update statements
+		[10-06] fix serial numbers for inserts
+
+</docs>
+
+
+<investigate>
+	[ ] http://alzabo.sourceforge.net/
+</investigate>

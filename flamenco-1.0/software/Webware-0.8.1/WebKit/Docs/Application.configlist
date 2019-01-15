@@ -1,0 +1,116 @@
+[
+('AdminPassword', "'webware'", 'The password that, combined with the <span class=name>admin</span> id, allows access to the AppControl page of the Admin context. You should change this after installation so that outsiders cannot tamper with your app server.'),
+
+('DirectoryFile', "['index', 'Main']", 'The list of basic filenames that WebKit searches for when serving up a directory. Note that the extensions are absent since WebKit autodetects extensions (for example, index.py, index.html, index.psp, etc.).'),
+
+('PrintConfigAtStartUp', '1', "Does what it says. It's generally a good idea to leave this on."),
+
+('ExtensionsToIgnore', "['.pyc', '.pyo', '.py~', '.bak', '.tmpl']", 'This is a list of extensions that WebKit will ignore when autodetecting extensions. Note that this does not prevent WebKit from serving such a file if it is named explicitly in a URL.'),
+
+('ExtensionsToServe', "[]", 'This is a list of extensions that WebKit will use exclusively when autodetecting extensions. Note that this does not prevent WebKit from serving such a file if it is named explicitly in a URL.'),
+
+('UseCascadingExtensions', "1", 'Should extension cascading be used when autodetecting extensions'),
+
+('ExtensionCascadeOrder', "['.psp', '.py', '.html']", 'This is a list of extensions that WebKit will cascade through when autodetecting extensions. Note that this has no effect if the extension is named explicitly in a URL.'),
+
+('FilesToHide', "['.*', '*~', '*bak', '*.tmpl', '*.pyc', '*.pyo', '*.config']", 'File patterns to protect from browsing.  This affects all requests, not just requests with autodetected extensions.'),
+
+('FilesToServe', "[]", 'File patterns to serve from exclusively. If the file being served for a particulary request does not match one of these patterns an HTTP403 Forbidden error will be return.  This affects all requests, not just requests with autodetected extensions.'),
+
+('LogActivity', '1', "If true, then the execution of each servlet is logged with useful information such as time, duration and whether or not an error occurred."),
+
+('ActivityLogFilename', "'Logs/Activity.csv'", "This is the name of the file that servlet executions are logged to. This setting has no effect if <span class=name>LogActivity</span> is 0. The path can be relative to the WebKit location, or an absolute path."),
+
+('ActivityLogColumns',
+	"['request.remoteAddress', 'request.method', 'request.uri', 'response.size', 'servlet.name', 'request.timeStamp', 'transaction.duration', 'transaction.errorOccurred']",
+	'''Specifies the columns that will be stored in the activity log. Each column can refer to an object from the set: [application, transaction, request, response, servlet, session] and then refer to its attributes using "dot notation". The attributes can be methods or instance attributes and can be qualified arbitrarily deep.'''),
+
+('Contexts',
+    '''{
+<br> &nbsp; &nbsp; 'default':   'Examples',
+<br> &nbsp; &nbsp; 'Admin':     'Admin',
+<br> &nbsp; &nbsp; 'Examples':  'Examples',
+<br> &nbsp; &nbsp; 'Docs':      'Docs',
+<br> &nbsp; &nbsp; 'Testing':   'Testing',
+<br>}''',
+	"This dictionary maps context names to the directory holding the context content. Since the default contexts all reside in WebKit, the paths are simple and relative. The context name appears as the first path component of a URL, otherwise Contexts['default'] is used when none is specified. When creating your own application, you will add a key such as 'MyApp' with a value such as '/home/apps/MyApp'. That directory will then contain content such as Main.py, SomeServlet.py, SomePage.psp, etc."),
+
+('SessionStore', "'Dynamic'", 'This setting determines which of the three session stores is used by the application: File, Dynamic or Memory. The file store always gets sessions from disk and puts them back when finished. Memory always keeps all sessions in memory, but will periodically back them up to disk. Dynamic is a good cross between the two, which pushes excessive or inactive sessions out to disk.'),
+
+('SessionTimeout', "60", "Determines the amount of time (expressed in minutes) that passes before a user's session will timeout. When a session times out, all data associated with that session is lost."),
+
+('IgnoreInvalidSession', "1", "If false, then an error message will be returned to the user if the user's session has timed out or doesn't exist.  If true, then servlets will be processed with no session data <!-- and can take action if session.isNew(). -->. "),
+
+('UseAutomaticPathSessions', "0", "If true, then the app server will include the session ID in the URL by inserting a component of the form _SID_=8098302983 into the URL, and will parse the URL to determine the session ID.  This is useful for situations where you want to use sessions, but it has to work even if the users can't use cookies. "),
+
+('MaxDynamicMemorySessions', '10000', 'The maximum number of dynamic memory sessions that will be retained in memory. When this number is exceeded, the least recently used, excess sessions will be pushed out to disk. This setting can be used to help control memory requirements, especially for busy sites. This is used only if the SessionStore is set to Dynamic.'),
+
+('DynamicSessionTimeout', '15', 'The number of minutes of inactivity after which a session is pushed out to disk. This setting can be used to help control memory requirements, especially for busy sites. This is used only if the SessionStore is set to Dynamic.'),
+
+('SessionPrefix', 'None', '''This setting can be used to prefix the session IDs with a string.  Possible values are None (don't use a prefix), "hostname" (use the hostname as the prefix), or any other string (use that string as the prefix).  Why would you want to use this?  It can be used along with some mod_rewrite magic to do simple load balancing with session affinity.'''),
+
+('ExtraPathInfo', '0', '''When enabled, this setting allows a servlet to be followed by additional path components which are accessible via HTTPRequest's extraURLPath(). For subclassers of Page, this would be self.request().extraURLPath(). This may degrade performance when turned on.'''),
+
+('CacheServletClasses', '1', 'When set to zero, the app server will not cache the classes that are loaded for servlets. This is for development and debugging.'),
+
+('CacheServletInstances', '1', 'When set to zero, the app server will not cache the instances that are created for servlets. This is for development and debugging.'),
+
+('ClearPSPCacheOnStart', '1', 'When set to zero, the app server will allow PSP instances to persist from one AppServer run to the next.  If you have PSPs that take a long time to compile, this can give a speedup.'),
+
+('ShowDebugInfoOnErrors', '1', "If true, then uncaught exceptions will not only display a message for the user, but debugging information for the developer as well. This includes the traceback, HTTP headers, form fields, environment and process ids. You will most likely want to turn this off when deploying the site for users."),
+
+('IncludeFancyTraceback', '0', 'If true, then display a fancy, detailed traceback at the end of the error page.  This makes use of a modified version of cgitb.py which is included with Webware.  The original version was written by Ka-Ping Yee and is available <a href="http://web.lfw.org/python/">here</a>.'),
+
+('FancyTracebackContext', '5', "The number of lines of source code context to show if IncludeFancyTraceback is turned on."),
+
+('UserErrorMessage',
+	"'The site is having technical difficulties with this page. An error has been logged, and the problem will be fixed as soon as possible. Sorry!'",
+	"This is the error message that is displayed to the user when an uncaught exception escapes a servlet."),
+
+('ErrorLogFilename', "'Logs/Errors.csv'", "The name of the file where exceptions are logged. Each entry contains the date & time, filename, pathname, exception name & data, and the HTML error message filename (assuming there is one)."),
+
+('SaveErrorMessages', '1', "If true, then errors (e.g., uncaught exceptions) will produce an HTML file with both the user message and debugging information. Developers/administrators can view these files after the fact, to see the details of what went wrong."),
+
+('ErrorMessagesDir', "'ErrorMsgs'", "This is the name of the directory where HTML error messages get stored."),
+
+('EmailErrors', '0', "If true, error messages are e-mailed out according to the ErrorEmailServer and ErrorEmailHeaders settings. This setting defaults to false because <span class=name>ErrorEmailServer</span> and <span>ErrorEmailHeaders</span> must be configured first."),
+
+('EmailErrorReportAsAttachment', '0', "1 to make html error reports be emailed as text with an html attachment, or 0 to make the html the body of the message."),
+
+('ErrorEmailServer', "'mail.-.com'", "The SMTP server to use for sending e-mail error messages."),
+
+('ErrorEmailHeaders',
+	'''{
+<br> &nbsp; &nbsp; 'From':         '-@-.com',
+<br> &nbsp; &nbsp; 'To':           ['-@-.com'],
+<br> &nbsp; &nbsp; 'Reply-to':     '-@-.com',
+<br> &nbsp; &nbsp; 'Content-type': 'text/html',
+<br> &nbsp; &nbsp; 'Subject':      'Error'
+<br>}''',
+	"The e-mail MIME headers used for e-mailing error messages. Be sure to configure 'From', 'To' and 'Reply-to' before turning <span class=name>EmailErrors</span> on."),
+
+('UnknownFileTypes',
+	'''{
+<br> &nbsp; &nbsp; 'ReuseServlets': 1,
+<br>
+<br> &nbsp; &nbsp; # Technique choices:
+<br> &nbsp; &nbsp; # serveContent, redirectSansAdapter
+<br> &nbsp; &nbsp; 'Technique': 'serveContent',
+<br>
+<br> &nbsp; &nbsp; # If serving content:
+<br> &nbsp; &nbsp; 'CacheContent': 1,  # set to 0 to reduce memory use
+<br> &nbsp; &nbsp; 'CheckDate':    1,
+<br>}''',
+	'''This setting controls the manner in which WebKit serves "unknown extensions" such as .html, .gif, .jpeg, etc. The default settings specify that the servlet matching the file be cached in memory, that the contents of the file be cached in memory and that the file timestamp to be checked on every request. This works well for most sites.
+
+	<br><br> If your site has a large amount of static files being served via WebKit, you should consider changing 'CacheContent' to 0. If you are confident that your static files do not get updated while the app server is live, then you might consider changing 'CheckDate' to 0 for better performance.
+
+	<br><br> The 'Technique' setting can be switch to 'redirectSansAdapter', but this is an experimental setting with some known problems. '''),
+
+('MaxValueLengthInExceptionReport', '500', "Values in exception reports are truncated to this length, to avoid excessively long exception reports.  Set this to None if you don't want any truncation."),
+
+('RPCExceptionReturn', "'traceback'", "Determines how much detail an RPC servlet will return when an exception occurs on the server side. Can take the values, in order of increasing detail, 'occurred', 'exception' and 'traceback'. The first reports the string 'unhandled exception', which the second prints the actual exception and finally the third prints both the exception and accompanying traceback. All returns are always strings."),
+
+('ReportRPCExceptionsInWebKit', '1', "1 means report exceptions in RPC servlets in the same way as exceptions in other servlets, i.e. in the logfiles, the error log, and/or by email.  0 means don't report the exceptions on the server side at all; this is useful if your RPC servlets are raising exceptions by design and you don't want to be notified."),
+
+]

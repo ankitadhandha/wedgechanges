@@ -1,0 +1,4 @@
+
+[2000-04-17 ce] Fixed a fairly serious bug in HTMLForException() where HTMLEncode() wasn't effectively used in many cases. That resulted in bizarre/wrong looking exception reports.
+[2000-04-17 ce] Provided a better, but still incomplete ver of the docs.
+[2000-04-17 ce] Turned WebUtils into a package.

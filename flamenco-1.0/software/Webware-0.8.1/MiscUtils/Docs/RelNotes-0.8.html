@@ -1,0 +1,53 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<style type=text/css>
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>MiscUtils 0.8 Release Notes</title>
+</head>
+
+<body>
+
+<h1>MiscUtils 0.8 Release Notes</h1>
+Version 0.8
+<br>Webware for Python 0.8
+
+
+<ul>
+	<li> New <a href=Source/Files/PickleCache.py.html>PickleCache</a> module which is now used by <a href=Source/Files/DataTable.py.html>DataTable</a> and MiddleKit.Core.Model in order to load files more quickly. See the <a href=Source/Files/PickleCache.py.html>doc string</a> for details.
+</ul>
+
+<p> New functions in <span class=name>MiscUtils.Funcs</span>
+	<dl>
+		<dt><span class=name>localIP(remote=('www.yahoo.com', 80), useCache=1)</span></dt>
+		<dd>Returns your local IP address, hopefully as seen by the Internet. It comes with caveats, so read the <a href=Source/Files/Funcs.py.html>doc string</a>.</dd>
+
+		<br>
+		<dt><span class=name>mktemp(suffix="", dir=None)</span></dt>
+		<dd>Alternative to tempfile.mktemp that allows a custom directory to be passed without requiring any module level variables to be clobbered.</dd>
+
+		<br>
+		<dt><span class=name>valueForString(s)</span></dt>
+		<dd>For a given string, returns the most appropriate Pythonic value such as None, a long, an int, a list, etc.</dd>
+
+		<br>
+		<dt><span class=name>wordWrap(s, width=78)</span></dt>
+		<dd>Returns a version of the string word wrapped to the given width.</dd>
+	</dl>
+
+<p> New functions in <span class=name>Configurable</span>
+      <dl>
+      <dt><span class=name>commandLineSetting(configName, settingName, default=NoDefault)</span></dt>
+      <dd>Accesses the values of settings passed through <span class=name>addCommandLineSetting</span>.  Typically, you would use it by calling AppServer like <tt>./AppServer --Context.Root=/WK</tt> -- where <tt>Context</tt> is not necessarily the name of a configurable class.  Other classes can use this setting to retrieve <tt>"/WK"</tt>, like <tt>Configurable.commandLineSetting("Context", "Root")</tt>.</dd>
+      </dl>
+
+<p><hr>
+
+</body>
+</html>

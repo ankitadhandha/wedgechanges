@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# as long as the appserver returns a 3, it wants to be restarted
+
+retcode=3
+while test $retcode -eq 3; do
+    /usr/bin/env python Launch.py ThreadedAppServer $*
+    retcode=$?
+done

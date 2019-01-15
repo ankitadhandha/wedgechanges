@@ -1,0 +1,17 @@
+This is a C coded cgi script for talking to the WebKit AppServer.  Just put it in a directory where your webserver can execute cgi's, and you're good to go.
+
+By default, it will try to talk to the AppServer on host localhost on port 8086.  It'll retry the connection 10 times with a delay of 1 second between retries.
+
+To change any of these parameters, put a file name webkit.cfg in the same directory as the cgi executable.  A sample file is included here.
+
+Build Instructions:
+
+On UNIX:
+Just run make
+
+On Windows:
+A VC6 project file is included.  You will be able to get prebuilt binaries
+from webware.sourceforge.net.  If you don't see any there, ask on the
+webware-discuss mailing list.
+
+Enjoy

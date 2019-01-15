@@ -1,0 +1,65 @@
+<center><b>
+Version %(versionString)s
+<br>%(releaseDate)s
+</b></center>
+
+
+<p> <table align=center border=0>
+
+<tr>
+
+<td valign=top nowrap>
+	<ul>
+		<li> <a href=Overview.html class=BigLink>Overview</a>
+		<br> (start here)
+
+		<li> <a href=ComponentIndex.html class=BigLink>Component Index</a>
+		<br> (overview and pointers to all components)
+
+		<li> <a href=Copyright.html class=BigLink>Copyright et al</a>
+		<br> (open source copyright, license and disclaimer)
+	</ul>
+</td>
+
+
+<td valign=top>
+	<ul>
+		<li> <a href=RelNotes.html class=BigLink>Release Notes</a>
+		<br> (release notes for Webware)
+
+		<li> <a href=StyleGuidelines.html class=BigLink>Style Guidelines</a>
+		<br> (guidelines for Webware developers)
+
+		<li> <a href=ReleaseProcedures.html class=BigLink>Release Procedures</a>
+		<br> (how to cut a Webware release)
+	</ul>
+</td>
+</tr>
+
+
+<tr>
+
+<td valign=top>
+	<ul>
+		<li> <a href=http://webware.sourceforge.net/ class=BigLink>Webware</a>
+			<br> (the Webware home page)
+		<li> <a href=http://sourceforge.net/projects/webware class=BigLink>Webware@SourceForge</a>
+			<br> (the Webware project page at SourceForge)
+<!--
+		<li> <a href=http://lists.sourceforge.net/mailman/listinfo/webware-discuss class=BigLink>webware-discuss</a>
+			<br> (discussion list home page)
+		<li> <a href=http://lists.sourceforge.net/mailman/listinfo/webware-announce class=BigLink>webware-announce</a>
+			<br> (announce list home page)
+-->
+	</ul>
+</td>
+
+<td valign=top>
+	<ul>
+		<li> <a href=http://www.python.org class=BigLink>Python</a> <br> (Python home page)
+		<li> <a href=http://www.corrt.com/info/pyisp-list.html class=BigLink>Python-friendly ISPs</a> <br> (find a host for your Python app)
+	</ul>
+</td>
+</tr>
+
+</table>

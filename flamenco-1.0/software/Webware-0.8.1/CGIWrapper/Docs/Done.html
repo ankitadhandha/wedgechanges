@@ -1,0 +1,97 @@
+<html>
+
+<head>
+	<link rel=STYLESHEET href="../../Documentation/StyleSheet.css" type="text/css">
+	<title>CGI Wrapper (WebKit for Python)</title>
+</head>
+
+<body>
+
+
+<h1>CGI Wrapper</h1>
+
+<a name=Done><h3>Done</h3></a>
+
+<ul>
+	<li> <b>2000-@@-@@ ver 0.2 - ALPHA</b>
+		<ul>
+		<li> 2000-04-25 ce
+			<ul>
+			<li> sys.exit(0), which throws an exception, is now detected and handled gracefully. i.e., the wrapper no longer reports it as an error
+			</ul>
+		<li> 2000-04-24 ce
+			<ul>
+			<li> Major updates to the documentation to reflect the past few days work, plus table of contents, section anchors, etc.
+			<li> Killed ClassExample.py. See _admin.py and other "underscore" scripts for a good example of class-cased CGIs.
+			<li> Enhanced the admin error log to provide a link to the archived error messages (which are plain HTML files). This was prompted the discovery and fix described just below.
+			<li> Found a bad glitch: a relative URL that points to a non-script file that is embedded in a page from a CGI script will end up hitting "server.cgi" which then barfs on the non-script. I fixed up CGI Wrapper. The new policy is that anything with an extension is re-served with a "Location:" header. Anything without an extension is assumed to be a Python script.
+			<li> Got rid of special __info__ URL and supporting showInfo() method. Use _admin URL and look at _admin.py script instead.
+			<li> Pulled CGIWrapperUtils.py into CGIWrapper.
+			<li> The integration with class-based CGIs can now be configured with the 'ClassNames' setting which is an array of names attempted in order. The empty string means the same name as the script.
+			<li> Use cStringIO, but catch ImportError and use StringIO if it's not avail. Haven't compared performance.
+			<li> The Scripts.csv log can now be configured by the ScriptLogColumns setting which is an array of names. I used KeyValueAccess for this. Pretty sweet.
+			</ul>
+		<li> 2000-04-23 ce
+			<ul>
+			<li> Created KeyValueAccess class in Webware's MiddleKit package and made that the superclass of CGIWrapper. (The purpose being for the new ScriptLogColumns setting.)
+			<li> Added "e-mail errors" feature.
+			<li> Renamed go() to serve().
+			</ul>
+		<li> 2000-04-21 ce
+			<ul>
+			<li> Removed special __info__ URL and added _admin page which shows basic info and a menu for the script log, error log and configuration. Added _dumpCSV and _config. Created AdminPage base class for all admin scripts.
+			<li> Scripts that start with an underscore should be run out of the CGI Wrapper's directory. This will be used for CGI Wrapper support scripts.
+			<li> Wrapper: The script log should print a header line the first time the file ever gets written to.
+			<li> Renamed ErrorMessage setting to UserErrorMessage.
+			<li> handleException()
+				<ul>
+				<li> Added settings, ErrorLogFilename, SaveErrorMessages, ErrorMessagesDir.
+				<li> Added error logging to 'Errors.csv'.
+				<li> HTML error message pages are now saved to a file that can reviewed later by the developer/administrator.
+				<li> Broke out the functionality of handleException() into methods that can be overriden.
+				</ul>
+			<li> Docs: Should include an example error page.
+			</ul>
+		</ul>
+
+	<li> <b>2000-04-19 ver 0.1</b>
+		<ul>
+		<li> 2000-04-16 ce
+			<ul>
+			<li> Document the OO hook.
+			<li> The traceback on errors is not colorized like in WebKit.
+			<li> Message to stderr should include a timestamp.
+			<li> Review the names of the settings.
+			<li> Add a special version URL that reports the version of the CGI wrapper.
+			<li> Describe the hook for cookies.
+			<li> Rename 'env' global to 'environ' to match os.
+			</ul>
+		<li> 2000-04-15 ce
+			<ul>
+			<li> Document the globals that are passed to the CGI script and that scripts should use 'env'.
+			<li> Revamp the CGI Wrapper into a class that could then be subclassed and customized.
+			<li> The target script should also have a "wrapper" variable that points back to the CGI Wrapper.
+			<li> The current directory is not changed to the location of the script.
+			<li> The Colors example script does not compute brightness correctly.
+			<li> Some of the config info is hard coded so you have to change the script source.
+			<li> Import target scripts rather than reading & execing their source. Note: Python doesn't seem to allow any backdoors for passing global vars to an import, so this may not be reasonably possible. 2000-04-09: Looks like execfile() can take care of this.
+			<li> Explain in docs that Server.cgi also forces byte code caching of server.py.
+			<li> The View example script should probably accept a variable tabsize and then use string.expandtabs.
+			<li> The View example script doesn't do its HTML encoding very well. Also, maybe it should use WebUtils.
+			</ul>
+		<li> 2000-04-10 ce
+			<ul>
+			<li> There's a bug in writing the script log at run time.
+			</ul>
+		<li> < 2000-04-10 ce
+			<ul>
+			<li> A bunch of stuff.
+			</ul>
+		</ul>
+</ul>
+
+<p><hr>
+
+</body>
+</html>
+

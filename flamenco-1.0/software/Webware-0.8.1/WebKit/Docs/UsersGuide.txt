@@ -1,0 +1,398 @@
+WebKit User's Guide
++++++++++++++++++++
+
+Version 0.8, Webware for Python
+
+.. contents::
+
+Synopsis
+========
+
+WebKit provides Python classes for generating dynamic content from a
+web-based, server-side application. It is a significantly more
+powerful alternative to CGI scripts for application-oriented
+development.
+
+Feedback
+========
+
+You can e-mail webware-discuss@lists.sourceforge.net to give feedback,
+discuss features, and get help using WebKit.  If you have a bug to
+report, use the `bug tracker`_.
+
+.. _`bug tracker`:  http://sourceforge.net/tracker/?atid=104866&group_id=4866&func=browse
+
+
+Introduction
+============
+
+Python 9
+--------
+
+A paper titled "Introduction to Webware" was accepted for `Python 9`_,
+which ran the week of March 4th, 2001. @@ ib: where are these now?
+
+.. _`Python 9`: http://www.python9.org
+
+Overview
+--------
+
+The core concepts of the WebKit are the Application, Servlet, Request,
+Response and Transaction, for which there are one or more Python
+classes.
+
+The application resides on the server-side and manages incoming
+requests in order to deliver them to servlets which then produce
+responses that get sent back to the client. A transaction is a simple
+container object that holds references to all of these objects and is
+accessible to all of them.
+
+Content is normally served in HTML or XML format over an HTTP
+connection. However, applications can provide other forms of content
+and the framework is designed to allow new classes for supporting
+protocols other than HTTP.
+
+In order to connect the web server and the application server a small
+program called an *adapter* is used. It bundles a web browser
+request and sends it to the application server, which then processes
+it and sends the response back to the adapter which then outputs the
+results for use by the web server. Adapters come in various flavors
+including CGI, FastCGI and Apache mod. See the `Install Guide`_ for
+more information.
+
+.. _`Install Guide`: InstallGuide.html
+
+At a more detailed level, the process looks like this:
+
+* At some point, someone has configured and run both a web server
+  (such as Apache) and the WebKit app server (WebKit/AppServer).
+* A user requests a web page by typing a URL or submitting a form.
+* The user's browser sends the request to the remote web server.
+* The web server invokes the adapter.
+* The adapter simply collects information about the request and sends
+  it to the WebKit app server which is ready and waiting.
+* The app server asks the Application object to dispatch the raw
+  request.
+* The application instantiates an HTTPRequest object and asks the
+  appropriate Servlet (as determined by examining the URL) to process
+  it.
+* The servlet generates content into a given HTTPResponse object,
+  whose content is then sent back by the app server to the adapter.
+* The adapter sends the content through the web server and ultimately to
+  the user's web browser.
+
+For a more detailed guide, see `Anatomy of a Webware Transaction`_.
+
+.. _`Anatomy of a Webware Transaction`: AnatomyTransaction.html
+
+Compared to CGI applications
+----------------------------
+
+The alternative to a server-side application is a set of CGI
+scripts. However, a CGI script must always be launched from scratch
+and many common tasks will be performed repeatedly for each
+request. For example, loading libraries, opening database connections,
+reading configuration files, etc.
+
+With the long-running server-side application, the majority of these
+tasks can be done once at launch time and important results can be
+easily cached. This makes the application significantly more
+efficient.
+
+Of course, CGIs can still be appropriate for "one shot" deals or
+simple applications. Webware includes a `CGI Wrapper`_ if you'd like
+to encapsulate your CGI scripts with robust error handling, e-mail
+notifications, etc. @@ ib: is this still really supported?
+
+.. _`CGI Wrapper`: ../../CGIWrapper/Docs/index.html
+
+
+Errors / Uncaught Exceptions
+============================
+
+One of the conveniences provided by WebKit is the handling of uncaught
+exceptions. The response to an uncaught exception is:
+
+* Log the time, error, script name and traceback to AppServer's console.
+* Display a web page containing an apologetic message to the user.
+* Save a technical web page with debugging information so that
+  developers can look at it after-the-fact. These HTML-based error
+  messages are stored one-per-file, if the ``SaveErrorMessages``
+  setting is true (the default). They are stored in the directory
+  named by the ``ErrorMessagesDir`` (defaults to ``"ErrorMsgs"``).
+* Add an entry to the error log, found by default in
+  ``Logs/Errors.csv``
+* E-mail the error message if the ``EmailErrors`` setting is true,
+  using the settings ``ErrorEmailServer`` and
+  ``ErrorEmailHeaders``. See Configuration_ for more information.
+
+.. _Configuration: Configuration.html#errors
+
+Here is a `sample error page`_.
+
+.. _`sample error page`: SampleError.html
+
+Archived error messages can be browsed through the administration_ page.
+
+Error handling behavior can be configured as described in Configuration_.
+
+.. _Configuration: Configuration.html#errors
+
+Configuration
+=============
+
+There are several configuration parameters through which you can alter
+how WebKit behaves. They are described below, including their default
+values. Note that you can override the defaults by placing config
+files in the ``Configs/`` directory. A config file simply contains a
+Python dictionary containing the items you wish to override. For
+example::
+
+    {
+        'SessionStore': 'Memory',
+        'ShowDebugInfoOnErrors': 1
+    }
+
+See the `Configuration Guide`_ for more information on settings.
+
+.. _`Configuration Guide`: Configuration.html
+
+Administration
+==============
+
+WebKit has a built-in administration page that you can access via the
+``Admin`` context. You can see a list of all contexts in the sidebar
+of any ``Example`` or ``Admin`` page.
+
+The admin pages allows you to view WebKit's configuration, logs, and
+servlet cache, and perform actions such as clearing the cache,
+reloading selected modules and shutting down the app server.
+
+More sensitive pages that give control over the app server require a
+user name and password, the username is ``admin``, and you'll set the
+password when you run ``install.py``. You can change the password in
+``WebKit/Configs/Application.config``.
+
+The adminstration scripts provide further examples of writing pages
+with WebKit, so you may wish to examine their source in
+``WebKit/Admin/``.
+
+Debugging
+=========
+
+print
+-----
+
+The most common technique is the infamous ``print`` statement. The
+results of ``print`` statements go to the console where the WebKit
+application server was started (not to the HTML page as would happen
+with CGI). Prefixing the debugging output with a special tag (such as
+>>) is useful because it stands out on the console and you can search
+for the tag in source code to remove the print statements after they
+are no longer useful. For example::
+
+    print '>> fields =', self.request().fields()
+
+.. Note that if you are using <a
+   href=InstallGuide.html#Adapters_OneShot>OneShot.cgi</a>, then you will
+   need to set <span class=name>ShowConsole</span> to 1 in <span
+   class=filename>WebKit/Configs/OneShotAdapter.config</span>. @@ ib:
+   shall we kill this?
+
+Raising Exceptions
+------------------
+
+Uncaught expections are trapped at the application level where a
+useful error page is saved with information such as the traceback,
+environment, fields, etc. You can configure the application to
+automatically e-mail you this information. Here is an `example error
+page`_.
+
+.. _`example error page`: SampleError.html
+
+When an application isn't behaving correctly, raising an exception can
+be useful because of the additional information that comes with
+it. Exceptions can be coupled with messages, thereby turning them into
+more powerful versions of the ``print`` statement. For example::
+
+    raise Exception, 'self = %s' % self
+
+Restarting the Server
+---------------------
+
+When a servlet's source code changes, it is reloaded. However,
+ancestor classes of servlets and library modules are not.  You may wish
+to use the `auto-reloading feature`_ to mitigate this problem.
+
+.. _`auto-reloading feature`: @@fixme
+
+In any case, when having problems, consider restarting the app server.
+
+Another option is to use the AppControl page of the Admin_ context
+to clear the servlet instance and class cache.
+
+.. _Admin: Administration_
+
+Assertions
+----------
+
+Assertions are used to ensure that the internal conditions of the
+application are as expected. An assertion is equivalent to an ``if``
+statement coupled with an exception. For example::
+
+    assert shoppingCart.total()>=0.0, \
+        'shopping cart total is %0.2f' % shoppingCart.total()
+
+HTML Validation
+---------------
+
+You can validate the HTML in your pages using the `Web Designer
+Group's HTML Validator`_.  It is available as a `RPM package`_, in
+Debian as ``wdg-html-validator`` and you can also install the source_.
+
+.. _`Web Designer Group's HTML Validator`: http://www.htmlhelp.com/tools/validator/
+.. _`RPM package`: http://www.htmlhelp.com/tools/validator/packages/
+.. _source: http://www.htmlhelp.com/tools/validator/source.html
+
+To enable the validation, you have to override ``.writeBodyParts()``
+in your ``SitePage``, as::
+
+    def writeBodyParts(self):
+        Page.writeBodyParts()
+        self.validateHTML()
+
+If your pages contain invalid HTML, a message will be appended to the
+page.
+
+Naming Conventions
+==================
+
+Cookies and form values that are named with surrounding underscores
+(such as ``_sid_`` and ``_action_``) are generally reserved by WebKit
+and various plugins and extensions for their own internal purposes. If
+you refrain from using surrounding underscores in your own names, then
+[a] you won't accidentally clobber an already existing internal name
+and [b] when new names are introduced by future versions of WebKit,
+they won't break your application.
+
+Actions
+=======
+
+Suppose you have a web page with a form and one or more
+buttons. Normally, when the form is submitted, a method such as
+Servlet's ``respondToPost()`` or Page's ``writeHTML()``, will be
+invoked. However, you may find it more useful to bind the button to a
+specific method of your servlet such as ``new()``, ``remove()``
+etc. to implement the command, and reserve ``writeHTML()`` for
+displaying the page and the form that invokes these methods.  Note
+that your "command methods" can then invoke ``writeHTML()`` after
+performing their task.
+
+The *action* feature of ``Page`` let's you do this. The process goes
+like this:
+
+1. Add buttons to your HTML form of type ``submit`` and name
+   ``_action_``. For example::
+
+       <input name="_action_" type="submit" value="New">
+       <input name="_action_" type="submit" value="Delete">
+
+2. Alternately, name the submit button ``_action_methodName``.  For
+   example:: 
+
+       <input name="_action_New" type="submit" value="Create New Item">
+
+3. Add an ``actions()`` method to your class to state which actions
+   are valid.  (If WebKit didn't force you to do this, someone could
+   potentially submit data that would cause any method of your servlet
+   to be run).  For example::
+
+       def actions(self): 
+           return SuperClass.actions(self) + ['New', 'Delete']
+
+4. Now you implement your action methods.
+
+The ``ListBox`` example shows the use of actions (in
+``WebKit/Examples/ListBox.py``)
+
+Plug-ins
+--------
+
+A plug-in is a software component that is loaded by WebKit in order to
+provide additional WebKit functionality without necessarily having to
+modify WebKit's source.
+
+The most infamous plug-in is PSP (Python Server Pages) which ships
+with Webware.
+
+Plug-ins often provide additional servlet factories, servlet
+subclasses, examples and documentation. Ultimately, it is the plug-in
+author's choice as to what to provide and in what manner.
+
+Technically, plug-ins are Python packages that follow a few simple
+conventions in order to work with WebKit. See `Creating Plugins`_ for
+information about writing your own.
+
+.. _`Creating Plugins`: Developing.html#creatingplugins
+
+How do I develop an app?
+------------------------
+
+The answer to that question might not seem clear after being deluged
+with all the details. Here's a summary:
+
+* Make sure you can run the WebKit AppServer. See the `Install Guide`_
+  for more information.
+
+.. _`Install Guide`: InstallGuide.html
+	
+* Read the source to the examples (in ``WebKit/Examples``), then
+  modify one of them to get your toes wet.
+	
+* Create your own new example from scratch. Ninety-nine percent of the
+  time you will be subclassing the ``Page`` class.
+	
+* Familiarize yourself with the class docs in order to take advantage
+  of classes like Page, HTTPRequest, HTTPResponse and
+  Session. Unfortunately, I couldn't get generated class docs working
+  for this release, so you'll have to resort to breezing through the
+  source code which is coupled with documentation strings. Read the
+  examples first.
+	
+* With this additional knowledge, create more sophisticated pages.
+
+* If you need to secure your pages using a login screen, you'll want
+  to look at the SecurePage, LoginPage, and SecureCountVisits examples
+  in ``WebKit/Examples``.  You'll need to modify them to suit your
+  particular needs.
+
+* Contribute enhancements and bug fixes back to the project. ``:-)``
+
+* The Webware user community is quite supportive and friendly:
+
+  - Discussion mailing list:
+    http://lists.sourceforge.net/mailman/listinfo/webware-discuss
+
+  - Make sure you find out about new versions when they're released,
+    via the announce list:
+    http://lists.sourceforge.net/mailman/listinfo/webware-announce
+
+
+Known Bugs
+----------
+
+Known bugs and future work in general are documented in Future_.
+
+.. _Future: Future.html
+
+Credit
+
+Authors: Chuck Esterbrook, Jay Love, Geoff Talvola.
+@@ ib: We should add more names.
+
+Many people, mostly on the webware-discuss mailing list, have provided
+feedback and testing.
+
+The design was inspired by both Apple's WebObjects and Java's
+Servlets.
+

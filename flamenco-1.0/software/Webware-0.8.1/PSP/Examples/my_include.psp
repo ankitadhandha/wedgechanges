@@ -1,0 +1,4 @@
+
+Hello from included file!<br>
+<%@page imports="time" %>
+<%= time.ctime(time.time()) %>

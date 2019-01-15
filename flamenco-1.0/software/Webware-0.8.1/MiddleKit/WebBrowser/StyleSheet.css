@@ -1,0 +1,97 @@
+<style type="text/css">
+<!--
+	/*** Generic stuff ***/
+
+	body				{	font-family: Arial, Helvetica, sans-serif;
+							font-size: smaller;
+							color: black;
+							background-color: white;
+						}
+
+	p					{	font-family: Arial, Helvetica, sans-serif;
+							font-size: smaller;
+						}
+
+	form				{	font-family: Arial, Helvetica, sans-serif;
+							font-size: smaller;
+						}
+
+
+	/*** Page layout parts ***/
+
+	.TitleBar			{	font-family: Tahoma, Arial, sans-serif;
+							font-size: 18pt;
+							font-weight: bold;
+							color: white;
+							background-color: #00A;
+						}
+
+	.TopBar				{	background-color: #CCF;
+						}
+
+	.SideBar			{	background-color: #EEE;
+						}
+
+	.ContentWell		{
+						}
+
+
+	/*** Status Bar ***/
+
+	.StatusBar			{
+						}
+
+	.SelectLink			{
+						}
+
+
+	/*** Side Bar **/
+
+	.SideBarLink		{
+						}
+
+
+	/*** Text pieces ***/
+
+	.Heading			{	font-weight: bold;
+						}
+
+	.Help				{	font-family: Times, "Times New Roman", serif;
+						}
+
+
+	/*** Class links ***/
+
+	.ClassLink			{	font-size: smaller;
+						}
+
+	.CurClassLink		{	text-decoration: none;
+							font-weight: bold;
+							color: black;
+						}
+
+
+	/*** Table of data, usually objects ***/
+
+	.ObjectsTable		{
+						}
+
+	.TablePrefix		{	font-size: smaller;
+							font-weight: bold;
+						}
+
+	.NoObjectsCell		{	font-size: smaller;
+						}
+
+	.TableHeading		{	font-size: smaller;
+							font-weight: bold;
+							background-color: #FFD;
+							vertical-align: bottom;
+							align: right;
+						}
+
+	.TableData			{	font-size: smaller;
+						}
+
+-->
+</style>

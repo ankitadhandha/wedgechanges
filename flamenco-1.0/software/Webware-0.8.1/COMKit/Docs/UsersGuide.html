@@ -1,0 +1,63 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<title>COMKit User's Guide</title>
+</head>
+
+<body>
+
+<h1>COMKit User's Guide</h1>
+Version 0.8.1
+<br>Webware for Python 0.8.1
+
+
+<!--
+<a name=TOC><h2>Table of Contents</h2></a>
+
+<p> @@ TO DO
+-->
+
+
+<a name=Synopsis><h2>Synopsis</h2></a>
+
+<p> COMKit allows Microsoft Windows users to use COM objects inside of their WebKit servlets.
+
+
+<a name=Feedback><h2>Feedback</h2></a>
+
+<p> <p> You can e-mail <a href=mailto:webware-discuss@lists.sourceforge.net>webware-discuss@lists.sourceforge.net</a> to give feedback, discuss features and get help using COMKit.
+
+
+<a name=Overview><h2>Overview</h2></a>
+
+<p>If you try to use the win32com module within your WebKit servlets without using this plug-in, you will encounter COM errors
+due to the fact that each thread used with COM needs to be initialized properly for COM usage.  This plug-in provides the
+proper initialization of each WebKit thread to allow COM to work properly.
+
+<p>When this plug-in is enabled, it configures COM in free-threading mode when used in conjunction with ThreadedAppServer or AsyncThreadedAppServer.
+If you've never used COM before, or if you'd like to learn what "free-threading mode" means, you should get a copy of the fine book
+Python Programming on Win32 by Mark Hammond and Andy Robinson and pay special attention to the chapters about COM and also Appendix D
+for details on COM threading models.
+
+<a name=Usage><h2>Usage</h2></a>
+
+<p>To use COM, simply set EnableCOM to 1 in your AppServer.config file.  This causes the app server threads to be configured properly for
+COM free-threading.  Then go ahead and use win32com inside your servlets.
+
+<p>There's a simple example servlet that uses ADO for database access in ADOSample.py in the COMKit/Examples directory.
+
+<a name=KnownBugs><h2>Known Bugs</h2></a>
+
+<p> There are no known bugs, and there is no planned future work.
+
+
+<a name=Credit><h2>Credit</h2></a>
+
+<p> Authors: Geoff Talvola
+
+
+<p><hr>
+
+</body>
+</html>

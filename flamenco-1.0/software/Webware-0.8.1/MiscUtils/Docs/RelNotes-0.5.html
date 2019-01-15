@@ -1,0 +1,50 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<style type=text/css>
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>MiscUtils 0.5 Release Notes</title>
+</head>
+
+<body>
+
+<h1>MiscUtils 0.5 Release Notes</h1>
+Version 0.5
+<br>Webware for Python 0.5
+
+
+<a name=General><h2>General</h2></a>
+<ul>
+	<li> Version 0.5 was released on 3/1/2001.
+	<li> The following additions generally come with good doc strings which explain their purpose and use. Please consult the .py files to read the doc strings.
+	<ul>
+		<li> Added <span class=filename>Configurable.py</span> which previously resided in <a href=../../WebKit/Docs/index.html>WebKit</a>. [Chuck]
+		<li> Added <span class=filename>Error.py</span>. [Chuck]
+		<li> Added <span class=filename>Funcs.py</span> with various functions such as commas(), charWrap() and timestamp(). [Chuck]
+		<li> Added <span class=filename>DBPool.py</span>. [Dan G, Tom S, Geoff T]
+		<li> Added <span class=filename>MixIn.py</span>. [Chuck]
+		<li> Added <span class=filename>unittest.py</span> from <a href=http://pyunit.sourceforge.net/>http://pyunit.sourceforge.net/</a>. If you develop Webware, please add new test cases to Webware components when adding new features.
+		<li> Added <span class=filename>PropertiesObject.py</span> for reading the various <span class=filename>Properties.py</span> files of the Webware components. Most Webware users won't need or care about this class, but we use it internally. [Chuck]
+	</ul>
+	<li> Removed the CSV module which has been subsumed by the more powerful DataTable module. [Chuck]
+	<li> Added <span class=name>NoDefault</span> directly in the package. See the doc string for it in <span class=filename>__init__.py</span>.
+</ul>
+
+<a name=DataTable><h2>DataTable</h2></a>
+<ul>
+	<li> DataTable.TableRecord: Added has_key(), asList() and asDict(). [Chuck]
+	<li> Record-like objects added to a table must respond to hasValueForKey() and valueForKey() rather than hasValueForField() and valueForField(). Note that the "key" methods are implemented as a mix-in in NamedValueAccess (although you can certainly write your own). [Chuck]
+	<li> Bugfix: CSV files couldn't have quotation marks around heading names. [Chuck]
+	<li> Improved the docs and test suite. [Chuck]
+</ul>
+
+<p><hr>
+
+</body>
+</html>

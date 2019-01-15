@@ -1,0 +1,199 @@
+<html>
+
+	<head>
+		<title>Webware for Python</title>
+		<link rel=STYLESHEET href="StyleSheet.css" type="text/css">
+	</head>
+
+
+<body>
+
+<h1>Webware for Python</h1>
+Release 0.8.1 on August 1, 2003
+<br><a href=http://webware.sourceforge.net>http://webware.sourceforge.net</a>
+
+
+<h2>Synopsis</h2>
+
+
+<p> Webware for Python is a suite of software components for developing object-oriented, web-based applications. The suite uses well known design patterns and includes popular features such as:
+
+<ul>
+	<li> A fast, multi-threaded, easy-to-use application server
+	<li> Servlets
+	<li> Python Server Pages (PSP, similar to ASP, PHP and JSP)
+	<li> An object-relational mapper
+	<li> Task scheduling
+	<li> User management and authentication
+	<li> A CGI wrapper
+</ul>
+
+<p> Key goals of the project include:
+
+<ul>
+	<li> Python- and object-oriented.
+	<li> An expansive suite of components and features to cover common needs of web developers.
+	<li> Modular architecture where components can be used together or independently.
+	<li> Excellent documentation and numerous examples.
+	<li> Open source development and community.
+</ul>
+
+
+<h2>Feedback and Support</h2>
+
+<p> You can e-mail <a href=mailto:webware-discuss@lists.sourceforge.net>webware-discuss@lists.sourceforge.net</a> to give feedback, discuss features and get help using Webware. You can visit the <a href=http://lists.sourceforge.net/mailman/listinfo/webware-discuss>webware-discuss page</a> to join the list.
+
+
+<h2>Installation</h2>
+
+<p> Be sure to run <span class=filename>install.py</span> in the Webware directory before proceeding. Some portions of the documentation will not be accessible until this is done. (You can use <span class=filename>install.py -v</span> for verbose output).
+
+
+<h2>Components</h2>
+
+<p> Each Webware component has a focused purpose and can often be used on its own. At the same time, the components are designed to work together where appropriate. You can use as much or as little of Webware as you want to.
+
+<p>The components are summarized in the <a href=ComponentIndex.html>Component Index</a>.
+
+<p> Most people start with <a href=../WebKit/Docs/index.html>WebKit</a>, which is the Webware application server.
+
+
+
+<a name=Status><h2>Status</h2></a>
+
+<p> Webware is already being used for real work by a variety of people in different environments. With support from the <a href=http://lists.sourceforge.net/mailman/listinfo/webware-discuss>webware-discuss</a> mailing list, you should feel comfortable developing with Webware.
+
+<p> In the <a href=ComponentIndex.html>Component Index</a> you will see the status of each component such as <span class=name>alpha</span> and <span class=beta>beta</span>. For beta components we are successfully striving for backwards compatibility of the API as the components mature.
+
+<p> You can keep up on new releases through the <i>very low traffic</i> <a href=http://lists.sourceforge.net/mailman/listinfo/webware-announce>announcement list</a> and the home page at <a href=http://webware.sourceforge.net>http://webware.sourceforge.net</a>.
+
+
+<h2>Contributing</h2>
+
+<p> Webware could always use contributors in various areas, some of them lightweight and some of them not. Consider all the fun things you could do:
+<ul>
+	<li> Test pre-releases on your favorite OS, web server and version of Python. (lightweight)
+	<li> Write custom WebKit adapters for your favorite web server for enhanced performance. (fairly lightweight)
+	<li> Write an article about using Webware. (middleweight)
+	<li> Write a tutorial. (middleweight)
+	<li> Build up regression test suites to help with testing and ensure future stability. (middleweight)
+	<li> Contribute to the implementation of components such as WebKit and PSP. (heavyweight)
+	<li> Contribute something else you might think of that we haven't.
+</ul>
+
+<p> If you are interested in contributing please contact <a href=mailto:webware-discuss@lists.sourceforge.net>webware-discuss@lists.sourceforge.net</a>.
+
+
+<h2>Summary Information</h2>
+
+<table style="padding-left: 2em">
+<tr> <td valign=top> Home: </td> <td> <a href=http://webware.sourceforge.net>http://webware.sourceforge.net</a> </td> </tr>
+<tr> <td valign=top> Version: </td> <td> 0.8.1 </td> </tr>
+<tr> <td valign=top> Requirements: </td> <td> Python 2.0.
+	<br> Tested on UNIX (FreeBSD, Linux, et al) and
+	<br> Windows (2K, NT, Me, et al). </td> </tr>
+<tr> <td valign=top> Status: </td> <td> beta </td> </tr>
+<tr> <td valign=top> Announcements: </td> <td> join: <a href=http://lists.sourceforge.net/mailman/listinfo/webware-announce>http://lists.sourceforge.net/mailman/listinfo/webware-announce</a> (very low traffic) </td> </tr>
+<tr> <td valign=top> Discussion: </td> <td> e-mail: <a href="mailto:webware-discuss@lists.sourceforge.net">webware-discuss@lists.sourceforge.net</a>
+										<br> join: <a href=http://lists.sourceforge.net/mailman/listinfo/webware-discuss>http://lists.sourceforge.net/mailman/listinfo/webware-discuss</a> </td> </tr>
+<tr> <td valign=top> Copyright: </td> <td> See the <a href=Copyright.html>Copyright, License and Disclaimer</a>. </td> </tr>
+<tr> <td valign=top> Primary Authors: </td> <td> Chuck Esterbrook, <a href="mailto:ChuckEsterbrook@yahoo.com">ChuckEsterbrook@yahoo.com</a>
+						<br> Jay Love, <a href="mailto:jsliv@jslove.net">jsliv@jslove.net</a>
+						<br> Geoff Talvola, <a href="mailto:gtalvola@NameConnector.com">gtalvola@NameConnector.com</a>
+						</td> </tr>
+</table>
+
+
+<h2>Design Points</h2>
+
+<ul>
+	<li> Webware is pro-Python. These software components are not about Java, C++ or any other programming languages.
+	<li> The various software components are meant to be accessible in a stand alone fashion except in those cases where one component builds on another. That doesn't preclude the idea that the components can provide hooks for integration or even automatically integrate other components when their presence is detected.
+	<li> A clean, object-oriented style of development is used as much as possible.
+	<li> However, Webware components don't provide a special class for each type of HTML tag. It's generally easier and more efficient to use strings like '&lt;br&gt;&lt;hr&gt;' than to say something like 'BreakLine() + HorizontalRule()'.
+	<li> Documentation is meant to be of the highest caliber so that users can more quickly get up and running with Webware.
+	<li> All components are accompanied by examples (that also serve as tests).
+	<li> Over time, regression tests are created and expanded upon for each component.
+	<li> Although Webware includes more than one independent component, it's not intended to be a hodge-podge repository of any kind of web component written in Python. New components should fit into the 'feel' of what's there already and provide integration with other components whereever possible. The emphasis is on high-quality, object-oriented components (with the mild exception of the utility collections, MiscUtils and WebUtils).
+</ul>
+
+
+<h2>Release Notes</h2>
+
+<ul>
+	<li> <a href=RelNotes-0.8.1.html>Version 0.8.1</a>
+	<li> <a href=RelNotes-0.8.html>Version 0.8</a>
+	<li> <a href=RelNotes-0.7.html>Version 0.7</a>
+	<li> <a href=RelNotes-0.6.html>Version 0.6</a>
+	<li> <a href=RelNotes-0.5.1.html>Version 0.5.1</a>
+	<li> <a href=RelNotes-0.5.html>Version 0.5</a>
+	<li> <a href=RelNotes-0.4.1.html>Version 0.4.1</a>
+	<li> <a href=RelNotes-0.4.html>Version 0.4</a>
+	<li> <a href=RelNotes-0.3.html>Version 0.3</a>
+	<li> <a href=RelNotes-0.2.html>Version 0.2</a>
+</ul>
+
+
+<h2>Future</h2>
+
+<ul>
+	<li> Get gendoc or pythondoc going on the source code.
+	<li> Write an article for <a href=www.oreillynet.com/topics/python/internet>www.oreillynet.com/topics/python/internet</a>.
+	<li> <b>Investigate</b>
+	<ul>
+		<li> <a href=http://pyro.sourceforge.net>Pyro</a> - distributed objects
+		<li> <a href=http://www.fusebox.org>Fusebox</a>
+		<li> <a href=http://dustman.net/andy/python>HyperText</a> by Andy Dustman
+		<li> Other packages at <a href=http://www.vex.net/parnassus>V of P</a>
+	</ul>
+	<li> See the Future or TO DO sections of the documentation for each component for more info.
+</ul>
+
+
+<!--
+<a name=Copyright><h2>Copyright, License and Disclaimer</h2></a>
+
+<p> Webware for Python is open source. The Webware for Python source is copyrighted, but you can freely use and copy it as long as you don't change or remove this copyright notice. The license is a clone of the <a href=http://www.opensource.org/licenses/>OSI-approved</a> <a href=http://www.python.org/docs/Copyright.html>Python license</a>.
+
+<p>Copyright &copy; 1999-2000 by Chuck Esterbrook.
+
+<p align=center>All Rights Reserved</p>
+
+<p> Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation, and that the name of Chuck Esterbrook
+not be used in advertising or publicity pertaining to distribution of
+the software without specific, written prior permission.
+
+<p> CHUCK ESTERBROOK DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+EVENT SHALL CHUCK ESTERBROOK BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+
+
+<h2>Trademarks</h2>
+
+<p> All trademarks are reserved by their respective owners.
+-->
+
+
+<h2>Thanks to...</h2>
+
+<p> Members of <a href=http://lists.sourceforge.net/mailman/listinfo/webware-discuss>webware-discuss</a> and <a href=http://www.egroups.com/group/python-web-modules>python-web-modules</a> for discussion and feedback.
+
+<p> <a href=http://www.sourceforge.net>SourceForge</a> for hosting <a href=http://webware.sourceforge.net>Webware for Python</a>
+
+<p> <a href=http://www.python.org/~guido/>Guido van Rossum</a> for <a href=http://www.python.org>Python</a>
+
+
+<p><br><hr>
+Copyright &copy; 1999-2002 by Chuck Esterbrook. All Rights Reserved.
+<br>See copyright notice above for full details.
+
+</body>
+</html>

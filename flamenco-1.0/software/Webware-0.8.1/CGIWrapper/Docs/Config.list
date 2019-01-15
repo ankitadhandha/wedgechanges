@@ -1,0 +1,47 @@
+[
+
+('ScriptsHomeDir', "'/Scripts'", "This is where the wrapper always looks for the CGI scripts. There this location would <b>not</b> appear in URLs. The path can be relative to the CGI Wrapper's location, or an absolute path."),
+
+('ChangeDir', '1', "If true, the current working directory is changed to the same directory as the target script. Otherwise, the current working directory is left alone and likely to be the same as the CGI Wrapper."),
+
+('ExtraPaths', '[]', "A list of a strings which are inserted into <code>sys.path</code>. This setting is useful if you have one or more modules that are shared by your CGI scripts that expect to be able to import them."),
+
+('ExtraPathsIndex', '1', "This is the index into <code>sys.path</code> where the <code>ExtraPath</code> value is inserted. Often the first path in sys.path is <code>'.'</code> which is why the default value of <code>ExtraPathsIndex</code> is <code>1</code>."),
+
+('LogScripts', '1', "If true, then the execution of each script is logged with useful information such as time, duration and whether or not an error occurred."),
+
+('ScriptLogFilename', "'Scripts.csv'", "This is the name of the file that script executions are logged to. This value makes no difference if <code>LogScripts</code> is false/0. If the filename is not an absolute path, then it is relative to the directory of the CGI Wrapper."),
+
+('ScriptLogColumns',
+	"['environ.REMOTE_ADDR', 'environ.REQUEST_METHOD', 'environ.REQUEST_URI', 'responseSize', 'scriptName', 'serverStartTimeStamp', 'serverDuration', 'scriptDuration', 'errorOccurred']",
+	"Specifies the columns that will be stored in the script log. Each column is the name of an attribute of CGI Wrapper. The <b>Introspect</b> CGI example gives a list of all CGI Wrapper attributes. Note that attributes which are dictionaries, UserDicts or subclasses of MiddleKit's KeyValueAccess class can have their attributes used through dot notation (e.g., <code>obj1.obj2.attr</code>)."),
+
+('ClassNames', "['', 'Page']", "This is the list of class names that CGI Wrapper looks for after executing a script. An empty string signifies a class whose name is the same as it's script (e.g., <code>_admin</code> in <code>admin.py</code>). See <a href=#ClassBasedCGIs>Class-based CGIs</a> below."),
+
+('ShowDebugInfoOnErrors', '1', "If true, then the uncaught exceptions will not only display a message for the user, but debugging information for the developer as well. This includes the traceback, HTTP headers, CGI form fields, environment and process ids."),
+
+('UserErrorMessage',
+	"'The site is having technical difficulties with this page. An error has been logged, and the problem will be fixed as soon as possible. Sorry!'",
+	"This is the error message that is displayed to the user when an uncaught exception escapes the target CGI script."),
+
+('ErrorLogFilename', "'Errors.csv'", "This is the name of the file where CGI Wrapper logs exceptions. Each entry contains the date & time, filename, pathname, exception name & data, and the HTML error message filename (assuming there is one)."),
+
+('SaveErrorMessages', '1', "If true, then errors (e.g., uncaught exceptions) will produce an HTML file with both the user message and debugging information. Developers/administrators can view these files after the fact, to see the details of what went wrong."),
+
+('ErrorMessagesDir', "'ErrorMsgs'", "This is the name of the directory where HTML error messages get stored."),
+
+('EmailErrors', '0', "If true, error messages are e-mail out according to the ErrorEmailServer and ErrorEmailHeaders settings. This setting defaults to false because the other settings need to be configured first."),
+
+('ErrorEmailServer', "'mail.-.com'", "The SMTP server to use for sending e-mail error messages."),
+
+('ErrorEmailHeaders',
+	'''<pre>{
+    'From':         '-@-.com',
+    'To':           ['-@-.com'],
+    'Reply-to':     '-@-.com',
+    'Content-type': 'text/html',
+    'Subject':      'Error'
+}</pre>''',
+	"The e-mail MIME headers used for e-mailing error messages. Be sure to configure 'From', 'To' and 'Reply-to' before using this feature.")
+
+]

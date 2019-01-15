@@ -1,0 +1,59 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<title>Webware for Python 0.5 Release Notes</title>
+</head>
+
+<body>
+
+<h1>Webware for Python 0.5 Release Notes</h1>
+
+
+<a name=ReleaseNotes><h2>Release Notes</h2></a>
+
+<ul>
+	<li> Version 0.5 was released on 3/1/2001.
+</ul>
+
+
+<p> These release notes pertain to Webware at the top level. Each individual component in Webware has its own release notes. See the <a href=ComponentIndex.html>Component Index</a> for further information.
+
+
+<a name=NewComponents><h3>New Components</h3></a>
+
+<table border=0 cellpadding=2 cellspacing=2>
+	<tr> <td> <a href=../COMKit/Docs/index.html>COMKit</a> </td> <td> [Geoff T] </td> </tr>
+	<tr> <td> <a href=../MiddleKit/Docs/index.html>MiddleKit</a> </td> <td> [Chuck] </td> </tr>
+	<tr> <td> <a href=../TaskKit/Docs/index.html>TaskKit</a> </td> <td> [Tom S, Jay L] </td> </tr>
+	<tr> <td> <a href=../UserKit/Docs/index.html>UserKit</a> </td> <td> [Chuck] </td> </tr>
+</table>
+
+
+<a name=General><h3>General</h3></a>
+
+<ul>
+	<li> Docs: The new <a href=ComponentIndex.html>Component Index</a> is generated upon installation. [Chuck]
+	<li> Docs: An <span class=filename>index.html</span> is generated upon installation for each component. [Chuck]
+</ul>
+
+
+<a name=Internal><h3>"Internal"</h3></a>
+
+<p> If you develop Webware or plan on submitting patches, please review these.
+
+<ul>
+	<li> Component Improvements:
+	<ul>
+		<li> Components now have a <span class=filename>Properties.py</span> which advertises the component's name, version, required python version, required op sys (if any), denied op sys (if any), synopsis, required software and integrated software. This information can be used in generating documentation and in deciding how best to load plug-ins.
+	</ul>
+	<li> Docs: Added new <a href=StyleGuidelines.html>StyleGuidelines.html</a>.
+	<li> Created <span class=filename>DocSupport/RawToHTML.py</span> to help with a macro-like system in the docs. Not sure if this will last. Consider it an experiement.
+	<li> Added <span class=filename>bin/</span> as well as <span class=filename>pystats.py</span> and <span class=filename>checksrc.py</span>. See <span class=filename>bin/_README</span> and check the doc strings in the files for more info.
+</ul>
+
+
+<p><hr>
+
+</body>
+</html>

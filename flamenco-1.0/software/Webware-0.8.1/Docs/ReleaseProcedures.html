@@ -1,0 +1,175 @@
+<html>
+
+<!--
+Word wrap to this:
+123456789 123456789 123456789 123456789 123456789 123456789 123456789X
+-->
+
+<head><title>Release Procedures (Webware for Python)</title></head>
+
+<body>
+
+<pre><h1>Release Procedures</h1>Webware for Python
+
+<h2>Preface</h2>
+These notes have expanded and changed upon every release. Carefully,
+consider each step as you make it. Look for opportunities to
+improve. Also, update these notes immediately following a release.
+
+
+<h2>To Do</h2>
+* ReleaseHelper.py
+  * cvs tags
+* Add notes on download mirror
+  scp Webware-VER.tar.gz esterbro@ebad.pair.com:public_html/python/webware/
+
+
+<h2>Last minute tweaks</h2>
+* Run all regression test suites
+  > cd SomeKit/Tests
+  > python Test.py
+* Update all version numbers:
+  * Properties.py
+  * */Properties.py
+  * WebKit/AppServer.py
+  * WebKit/Application.py
+  * */Docs/*.html
+* Make sure there are no empty directories or zero length files
+  (such as __init__.py). Old unarchivers often ignore these, leading
+  to problems for users.
+* Release notes
+  * Search webware-discuss and webware-devel archives for "update"
+    in the subject, since the date of the last release.
+* Make sure the workspace is up to date and all files are checked in.
+  > cvs upd -dP
+* Skim through docs one final time
+  * Make sure all the version numbers and release dates are correct.
+
+
+<h2>Prep release</h2>
+Releases often go alpha 1, alpha 2, beta 1, beta 2, ... with
+suffixes a1, a2, b1, b2 as in 0.6.1b1.
+
+Must be done on UNIX (or permissions are lost).
+
+For CVS tagging only:  Use _ instead of .  No .:, or other symbols
+For example,
+   VER = 0.4
+   CVS_VER = 0_4
+
+* Make sure Properties.py's version has an a1, a2, b1, or b2, etc.
+* Check out a copy and upload:
+  > cvs -z3 -d:ext:$USER@cvs.Webware.sourceforge.net:/cvsroot/webware co Webware
+  > Webware/bin/ReleaseHelper.py
+* Download the release, install and test
+  * Check that the right versions show up in the WebKit examples, including b1.
+* Tag the release
+  > cvs -q tag Release-CVS_VER
+* If you want to get a particular release:
+  > cvs co -r Release-CVS_VER Webware
+
+
+<h2>Release on SourceForge</h2>
+FTP to SourceForge.net:
+
+> ncftpput -V upload.sourceforge.net /incoming Webware-VER.tar.gz
+
+* Log into <a href=http://sourceforge.net>sourceforge.net</a>.
+* Go to the <a href=https://sourceforge.net/project/?group_id=4866>Webware Project Page</a> @ SourceForge.
+* Click 'Admin' in the top menu bar.
+* Click 'Edit/Release Files' in the second menu bar.
+* Proceed to completion, but don't send users notification of
+  release until final test is performed and the web site is updated.
+* Reference for the above: <a href=http://sfdocs.sourceforge.net/sfdocs/display_topic.php?topicid=22>"Making File Releases"</a>
+
+* Download the release and test.
+* Review the trove categorization and update if necessary
+  * Go to Admin
+  * Read down and see the link for trove categorization
+
+
+<h2>Update Home Page</h2>
+<a href=http://webware.sourceforge.net>Webware Home Page</a>:
+    * Update:
+      * Last updated (at top of page)
+      * Version number, including links
+      * File size
+      * Project status
+      * Testimonials
+    * Review all text and links
+
+* You have to copy and install Webware in the web page directory so
+  the documentation can be browsed online:
+
+  > scp index.html USER@shell.sourceforge.net:/home/groups/webware/htdocs
+  > ssh -l echuck webware.sourceforge.net
+    > cd ... @@ complete this
+    # @@ instead of FTP, try scp or ncftpget
+    > ftp download.sourceforge.net
+      > bin
+      > hash
+      > cd /pub/sourceforge/Webware
+      > get Webware-VER.tar.gz
+      > quit
+    > rm -rf Webware
+    > tar xzf Webware-VER.tar.gz
+    > cd Webware
+    > python install.py
+
+* Add a news item to the <a href=https://sourceforge.net/project/?group_id=4866>Webware Project Page</a> @ SourceForge
+
+
+<h2>Notify</h2>
+Create a new announcement text file containing the text for the
+general announcement, SourceForge news and freshmeat.net update. Use
+the previous releases as examples.
+
+
+For pre-releases, just the following:
+  * To: <a href=webware-discuss@lists.sourceforge.net>webware-discuss@lists.sourceforge.net</a>
+  * http://prdownloads.sourceforge.net/webware/Webware-VER.tar.gz
+  * Report all problems to webware-discuss@lists.sourceforge.net.
+    Please include all appropriate version numbers including Webware,
+    Python, web server, op sys, browser, database, etc. If running
+    the app server, please specify flavor (eg, ThreadedAppServer)
+    and adapter.
+  * Expected release date for X.Y is MONTH, DAY.
+  * Changes since last release date are:
+    * ...
+
+Announce on mailing lists:
+    [ ] <a href=mailto:python-list@python.org>python-list@python.org</a>
+    [ ] <a href=mailto:python-announce@python.org>python-announce@python.org</a>
+    [ ] <a href=mailto:webware-announce@lists.sourceforge.net>webware-announce@lists.sourceforge.net</a>
+    [ ] <a href=mailto:python-web-modules@yahoogroups.com>python-web-modules@yahoogroups.com</a>
+    [ ] <a href=mailto:pywx@idyll.org>pywx@idyll.org</a>
+    [ ] <a href=mailto:db-sig@python.org>db-sig@python.org</a>
+        - Only if MiddleKit was updated
+        - Make custom message focused on MiddleKit
+
+Update:
+    [ ] <a href=http://www.vex.net/parnassus>Vaults of Parnassus</a>
+    [ ] <a href=http://www.crosswinds.net/~pboddie/Python/web_modules.html>Python Web Modules</a> (the pboddie page, not the mailing list)
+    [ ] <a href=http://freshmeat.net>freshmeat.net</a>
+
+[ ] Review/search for other places where the announcement can be made.
+
+
+<h2>Post-release</h2>
+[ ] Update these Release Procedures.
+
+[ ] Check that the following were updated:
+    [ ] <a href=http://www.vex.net/parnassus>Vaults of Parnassus</a>
+    [ ] <a href=http://www.paul.boddie.net/Python/web_modules.html>Python Web Modules</a>
+    [ ] <a href=http://freshmeat.net>freshmeat.net</a>
+
+[ ] Look for follow up messages on <a href=news:comp.lang.python>comp.lang.python</a>
+
+[ ] Test drive the <a href=http://webware.sourceforge.net/>home page</a>, <a href=https://sourceforge.net/project/admin/?group_id=4866>project page</a> and <a href=https://sourceforge.net/project/showfiles.php?group_id=4866>download</a>.
+
+[ ] Check the <a href=https://sourceforge.net/project/showfiles.php?group_id=4866>download counter</a> and <a href=https://sourceforge.net/project/stats/?group_id=4866>activity statistics</a> on SourceForge.
+
+</pre>
+
+<hr>
+</body>

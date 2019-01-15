@@ -1,0 +1,36 @@
+<html>
+
+<head>
+	<link rel=stylesheet href=StyleSheet.css type=text/css>
+	<style type=text/css>
+	<!--
+			li	{	padding-bottom: 0.75em;
+				}
+	-->
+	</style>
+
+	<title>WebKit  0.8.1  Release Notes</title>
+</head>
+
+<body>
+
+<h1>WebKit  0.8.1  Release Notes</h1>
+Version  0.8.1 
+<br>Webware for Python  0.8.1
+
+
+<a name=Introduction><h2>Introduction</h2></a>
+<ul>
+	<li> Version  0.8.1  was released on August 1, 2003 .
+</ul>
+
+<h2>Security</h2>
+
+<ul>
+	<li> Removed the use of SmartCookie from WebKit.  This was a major security hole, because WebKit was trying to unpickle every cookie string that it received from the client.  Maliciously constructed strings can cause pickle to execute arbitrary code, so this was a bad idea.  The drawback is that you can no longer store arbitrary picklable Python objects in cookies; now, only strings can be stored.
+</ul>
+
+<p><hr>
+
+</body>
+</html>

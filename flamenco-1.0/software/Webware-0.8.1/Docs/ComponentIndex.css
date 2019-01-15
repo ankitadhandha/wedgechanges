@@ -1,0 +1,51 @@
+<style type="text/css">
+<!--
+	/**
+		This is the style sheet is for:
+		  Webware/Documentations/ComponentIndex.html.
+
+		It is not for the index.html files of varous components.
+
+		Note that we assume that "StyleSheet.css" is linked to
+		before we are.
+	**/
+
+	body {
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: smaller;
+	}
+
+	p {
+		padding-left: 0;
+	}
+
+	td {
+		font-size: smaller;
+	}
+
+	.ComponentHeadings {
+		font-weight: bold;
+		color: white;
+		background-color: darkblue;
+	}
+
+	.ComponentRow1 {
+		background-color: #DDD;
+	}
+
+	.ComponentRow2 {
+		background-color: #EEE;
+	}
+
+	.NameVersionCell {
+	}
+
+	.Name {
+		font-weight: bold;
+	}
+
+	.Version {
+	}
+
+-->
+</style>
