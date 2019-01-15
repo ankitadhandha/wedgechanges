@@ -141,6 +141,7 @@ def insert(table, fields, records):
         records[:100] = []
         query('insert into `%s` (%s) values\n    %s;' %
               (table, ', '.join(fields), ',\n    '.join(rows)))
+	conn.commit()
     query()
 
 
@@ -371,7 +372,7 @@ tables['log'] = [
     'taskid int(10)',
     'letter char(2)',
     'interface varchar(100)',
-    'time timestamp(14)',
+    'time timestamp(6)',
     'event varchar(20)',
     'detail text',
     'item varchar(10)',
