@@ -161,7 +161,7 @@ class Flamenco(FrankenMatrix):
             #else:
             #    result += div('Return to Search', c='button disabled')
 
-        result += self.link(div('New Search', c='button'),
+            result += self.link(div('New Search', c='button'),
                             query=None, facet=None, group=None,
                             sort=None, offset=None, index=None)
 
