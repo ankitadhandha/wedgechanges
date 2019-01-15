@@ -65,7 +65,8 @@ class FrankenMatrix(InterfaceBase):
         if name=='': name='default'
         if name=='default':
             print loginerror
-            prompt=self.loginbanner(post=self.url())
+            #prompt=self.loginbanner(post=self.url())
+	    prompt = ''
         else:
             prompt = self.loggedinbox(name)
         if self.session.__contains__('showtooltips'):

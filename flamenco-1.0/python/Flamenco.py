@@ -115,7 +115,7 @@ class Flamenco(FrankenMatrix):
                 showsearchsave=1
         toolbar = self.toolbar(showsearchsave, showfavesave, showreturntosearch)
         login = ''
-        powered = '&nbsp;&nbsp;Powered by <a href=http://flamenco.berkeley.edu>Flamenco</a>'
+        powered = '' #'&nbsp;&nbsp;Powered by <a href=http://flamenco.berkeley.edu>Flamenco</a>'
         if self.session.username and self.session.username != 'default':
             login = ['Logged in as ', cls('user', self.session.username), '.']
         return div(div(powered, c='powered'), div(login, c='login'), h1(coll.PAGE_HEADING),
@@ -126,52 +126,52 @@ class Flamenco(FrankenMatrix):
         result = []
 
         if coll.USER_PERSONALIZATION:
-            if self.form.get('username', ''):
-                self.session.username = self.form.get('username', '')
+            #if self.form.get('username', ''):
+            #    self.session.username = self.form.get('username', '')
 
-            if self.index is not None:
-                if not self.manage:
-                    result += self.link(div('Save Item', c='button'),
-                                        favesave=1, words=self.words,
-                                        oldquery=self.oldquery)
-            elif searchsave and not self.logout: 
-                result += self.link(div('Save Search', c='button'),
-                                    words=self.words, oldquery=self.oldquery)
-            else:
-                result += div('Save Search', c='button disabled')
+            #if self.index is not None:
+            #    if not self.manage:
+            #        result += self.link(div('Save Item', c='button'),
+            #                            favesave=1, words=self.words,
+            #                            oldquery=self.oldquery)
+            #elif searchsave and not self.logout: 
+            #    result += self.link(div('Save Search', c='button'),
+            #                        words=self.words, oldquery=self.oldquery)
+            #else:
+            #    result += div('Save Search', c='button disabled')
             
-            if self.query and not self.logout:
-                result += self.link(div('History and Settings', c='button'),
-                                    facet=None, offset=None, words=self.words,
-                                    oldquery=self.oldquery,
-                                    manage=1, managestart=1)
-            elif not self.logout:
-                result += self.link(div('History and Settings', c='button'),
-                                    query=None, facet=None, group=None,
-                                    sort=None, offset=None, index=None,
-                                    manage=1, managestart=1)
-            else:
-                result += div('History and Settings', c='button disabled')
+            #if self.query and not self.logout:
+            #    result += self.link(div('History and Settings', c='button'),
+            #                        facet=None, offset=None, words=self.words,
+            #                        oldquery=self.oldquery,
+            #                        manage=1, managestart=1)
+            #elif not self.logout:
+            #    result += self.link(div('History and Settings', c='button'),
+            #                        query=None, facet=None, group=None,
+            #                        sort=None, offset=None, index=None,
+            #                        manage=1, managestart=1)
+            #else:
+            #    result += div('History and Settings', c='button disabled')
 
-            if returntosearch and not self.logout:
-                result += self.link(div('Return to Search', c='button'),
-                                    facet=None, offset=None, words=self.words,
-                                    oldquery=self.oldquery,
-                                    index=[SELF, None][not self.manage])
-            else:
-                result += div('Return to Search', c='button disabled')
+            #if returntosearch and not self.logout:
+            #    result += self.link(div('Return to Search', c='button'),
+            #                        facet=None, offset=None, words=self.words,
+            #                        oldquery=self.oldquery,
+            #                        index=[SELF, None][not self.manage])
+            #else:
+            #    result += div('Return to Search', c='button disabled')
 
         result += self.link(div('New Search', c='button'),
                             query=None, facet=None, group=None,
                             sort=None, offset=None, index=None)
 
-        if ((self.form.get('username', '') and
-             self.form.get('username', '') == 'default') or
-            (self.session.__session__.hasValue('username') and
-             self.session.username == 'default') or self.logout):
-            result += div('Logout', c='button disabled')
-        else:
-            result += self.link(div('Logout', c='button'), logout=1)
+        #if ((self.form.get('username', '') and
+        #     self.form.get('username', '') == 'default') or
+        #    (self.session.__session__.hasValue('username') and
+        #     self.session.username == 'default') or self.logout):
+        #    result += div('Logout', c='button disabled')
+        #else:
+        #    result += self.link(div('Logout', c='button'), logout=1)
         return tdr(result, c='toolbar')
 
     def relatedlink(self, db, facet, value):
