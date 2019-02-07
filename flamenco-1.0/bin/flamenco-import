@@ -483,7 +483,7 @@ for facet in facets:
     # Create the <facet> table with enough columns to fit the deepest path.
     maxlevel = max([len(path) for path in idpaths.values()])
     columns = ['id int(9) not null primary key',
-               'name varchar(100) default null',
+               'name varchar(600) default null',
                'parent int(9) default 0',
                'level int(2) default 0'
           ] + ['p%d int(9) default 0' % (l + 1) for l in range(maxlevel)
