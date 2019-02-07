@@ -84,7 +84,7 @@ def groupitems(query, facet, parent, link, links=0, buttons=0,
     rows = []
     for name, id, count in groups:
         term = (facet, id, 0)
-        head = cls('grouphead', esc(name or 'none'))
+        head = cls('grouphead', name or 'none')
         if links: head = link(head, term=term)
         rows.append((head, term, buttons and id and count > 1, count, limit))
     term = (facet, parent, 1)
@@ -283,7 +283,7 @@ def facetmatrix(query, link, fhead=facetheading, morelink=lambda t, f: t,
 #                   if caps == 'first word': modname=capitalize(name.lower())
 #                   elif caps == 'all words': modname=capwords(name.lower())
 #                   else: modname=name.lower()
-                    term = [link(esc(name), facet=f, term=(f, id, 0),
+                    term = [link(name, facet=f, term=(f, id, 0),
                                  count=count), nbsp,
                             cls('count', '(%s)' % count), separator]
                     if showtooltips:
