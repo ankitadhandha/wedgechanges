@@ -96,7 +96,8 @@ else:
         quit('The instance directory %r is missing.' % INSTANCES_DIR)
     for instance in os.listdir(INSTANCES_DIR):
         dir = os.path.join(INSTANCES_DIR, instance)
-        url = '%s/%s/Flamenco' % (thisfile, instance)
+        #url = '%s/%s/Flamenco' % (thisfile, instance)
+        url = '%s/Wedge' % (instance)
         if os.path.isdir(dir):
             if os.access(os.path.join(dir, 'flamenco-%s' % instance), os.X_OK):
                 items.append('<li><a href="%s">%s</a>' % (url, instance))
