@@ -2637,20 +2637,22 @@ class FrankenMatrix(InterfaceBase):
                         td(strong('Fourth Set of Tasks (posted 8/28/04) complete.'), colspan=2), c='taskset')
 
 
-                denali=tdc(link('Flamenco?task='+self.task, img(coll.PIC_URL_BASE+'use_denali.gif')))
+                #denali=tdc(link('Flamenco?task='+self.task, img(coll.PIC_URL_BASE+'use_denali.gif')))
+		denali=tdc(link('Wedge?task='+self.task, img(coll.PIC_URL_BASE+'use_denali.gif')))
                 shasta=tdc(link('Floogle?task='+self.task, img(coll.PIC_URL_BASE+'use_shasta.gif')))
                 x=random.randint(1, 2)
                 if x==1:
                     left=denali
-                    lefticon=tdc(link('Flamenco?task='+self.task, img(coll.DENALI_SRC)))
+                    #lefticon=tdc(link('Flamenco?task='+self.task, img(coll.DENALI_SRC)))
+		    lefticon=tdc(link('Wedge?task='+self.task, img(coll.DENALI_SRC)))	
                     right=shasta
                     righticon=tdc(link('Floogle?task='+self.task, img(coll.SHASTA_SRC)))
                 else:
                     left=shasta
                     lefticon=tdc(link('Floogle?task='+self.task, img(coll.SHASTA_SRC)))
                     right=denali
-                    righticon=tdc(link('Flamenco?task='+self.task, img(coll.DENALI_SRC)))
-
+                    #righticon=tdc(link('Flamenco?task='+self.task, img(coll.DENALI_SRC)))
+		    righticon=tdc(link('Wedge?task='+self.task, img(coll.DENALI_SRC)))
                 availableresult+=tr(tdc(tablew(
                     tr(td(nbsp, colspan=5)),
                     tr(td(nbsp, width='15%'), left,
@@ -2676,7 +2678,8 @@ class FrankenMatrix(InterfaceBase):
                     counter+=1
             if availableresult == []:
                 availableresult=tr(td(nbsp, width='2%'), td(available))
-            availableresult=postform(availableresult, action='Flamenco?manage=7')
+            #availableresult=postform(availableresult, action='Flamenco?manage=7')
+	    availableresult=postform(availableresult, action='Wedge?manage=7')
             if completedresult == []:
                 completedresult=tr(td(nbsp*2, completed, colspan=2))
         return table(trt(td('Available Tasks', colspan=2, c='title')),
