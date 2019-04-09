@@ -178,8 +178,8 @@ fi
 if [ -n "$1" ]; then
     default=$1
 elif [ -w /usr/local/flamenco -o -w /usr/local ]; then
-    default=/usr/local/flamenco
-    #default=/usr/local/wedge
+    #default=/usr/local/flamenco
+    default=/usr/local/wedge
 else
     default=$HOME/flamenco
 fi
