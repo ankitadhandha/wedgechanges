@@ -95,7 +95,7 @@ def facettree(db, facet, values, term=lambda d, f, v: db.name(f, v or None),
     
     return rows
 
-class Flamenco(FrankenMatrix):
+class Wedge(FrankenMatrix):
     def title(self):
         return '%s (%s)' % (coll.PAGE_TITLE, self.__class__.__name__)
 
