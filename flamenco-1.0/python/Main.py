@@ -52,4 +52,5 @@ class Main(Page):
         return [p, 'To begin using the interface, ',
                 tablew(tr(td(nbsp)),
                        tr(td(tablew(
-            tr(tdc(link('Flamenco?manage=7', 'Log in')))))))]
+            #tr(tdc(link('Flamenco?manage=7', 'Log in')))))))]
+            tr(tdc(link('Wedge?manage=7', 'Log in')))))))]
