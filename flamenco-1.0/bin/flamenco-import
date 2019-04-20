@@ -229,7 +229,7 @@ else:
         dbpass = getpass.getpass('MySQL password: ')
 
         try:
-            conn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass)
+            conn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, connect_timeout=180)
             cursor = conn.cursor()
             break
         except MySQLdb.Error, err:
