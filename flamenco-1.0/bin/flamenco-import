@@ -657,7 +657,7 @@ if cursor:
 
     print "In most cases, you can use the default port range (hit Return)."
     print "Make sure these ports are not blocked by a firewall."
-    portrange = '21600-21609'
+    portrange = '21600-21619'
     while 1:
         portrange = prompt('WebKit port range', portrange)
         try:
