@@ -488,7 +488,7 @@ for facet in facets:
                'level int(2) default 0'
           ] + ['p%d int(9) default 0' % (l + 1) for l in range(maxlevel)
           ] + ['count int(9) default 0']
-    create(facet, columns + ['key name (name)'])
+    create(facet, columns + ['key name (name)', 'key k1 (id, parent)', 'key k2 (id, name)', 'key k3 (parent)', 'key k4 (parent, id)'])
 
     # Rows in the <facet> table are (id, name, parent, level, path..., count).
     records = []
@@ -506,7 +506,10 @@ for facet in facets:
                'id int(9) not null default 0',
                'leaf tinyint(1) default 0',
                'key item (item)',
-               'key id (id)']
+               'key id (id)',
+	       'key (id, item)',
+	       'key (item, id)',
+	       'key (item, leaf)']
     create('item_%s' % facet, columns)
 
     # Rows in the item_<facet> table are (item, id, leaf).
