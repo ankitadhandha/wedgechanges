@@ -109,14 +109,16 @@ class Page(WebKit.Page.Page):
             self.body(self.out)
             self.footer(self.out)
         except MySQLdb.Error, error:
-            if error.args[0] in (1037, # out of memory
+            if error.args[0] in(2006,):
+                app.conn.ping(True)
+            elif error.args[0] in (1037, # out of memory
                                  1040, # too many connections
                                  1041, # out of resources
                                  1053, # shutdown in progress
                                  1078, # aborting on signal
                                  2002, # cannot connect to local
                                  2003, # cannot connect to host
-                                 2006, # server gone away
+                                 #2006, # server gone away
                                  2013, # lost connection during query
                                 ):
                 # These errors can often be resolved by restarting the server.
