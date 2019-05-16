@@ -94,7 +94,11 @@ else:
     items = []
     if not os.path.isdir(INSTANCES_DIR):
         quit('The instance directory %r is missing.' % INSTANCES_DIR)
-    for instance in os.listdir(INSTANCES_DIR):
+    
+    instances_dir1 = os.listdir(INSTANCES_DIR)
+    instances_dir1.sort()
+    
+    for instance in instances_dir1: #os.listdir(INSTANCES_DIR):
         dir = os.path.join(INSTANCES_DIR, instance)
         #url = '%s/%s/Flamenco' % (thisfile, instance)
         url = '%s/Wedge' % (instance)
