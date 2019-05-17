@@ -110,8 +110,9 @@ class Page(WebKit.Page.Page):
             self.footer(self.out)
         except MySQLdb.Error, error:
             if error.args[0] in(2006,):
-                app.conn.ping(True)
-                app.cursor = app.conn.cursor
+                conn = MySQLdb.connect(host=DBHOST, user=DBUSER, passwd=DBPASS, db=DBNAME)
+                #app.conn.ping(True)
+                #app.cursor = app.conn.cursor
             elif error.args[0] in (1037, # out of memory
                                  1040, # too many connections
                                  1041, # out of resources
