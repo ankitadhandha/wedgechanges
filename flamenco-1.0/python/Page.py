@@ -1,6 +1,8 @@
 # Copyright (c) 2004-2006 The Regents of the University of California.
 
 import WebKit.AppServer, WebKit.Session, WebKit.Page, UserDict, MySQLdb, app
+from instance import DBHOST, DBUSER, DBPASS, DBNAME
+
 from html import *
 
 class DictWrapper(UserDict.UserDict):
