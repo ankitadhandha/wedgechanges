@@ -36,17 +36,25 @@ def running(instance):
 
 def quit(*text):
     print 'Content-Type: text/html\n\n'
-    print '''<head><style>
+    print '''<head>
+    <title>WEDGE - Web Enabled Directed Graph Engine</title>
+    <style>
 body { font-family: lucida grande, verdana, sans-serif; margin: 0; }
+div.logo { border: 1px solid gray; }
+img { padding: 1em; background-color: #fff; }
 h1, h2 { padding: 16px; color: #fd4; background: #248; margin: 0; }
 h1 a, h2 a { color: #fd4; }
 h1 { font-size: 24px; padding-bottom: 0; }
 h2 { font-size: 10px; font-weight: normal; padding-top: 0; }
+div.container { font-size: 12px; padding: 16px; }
 div { font-size: 12px; padding: 16px; }
 pre { padding-left: 32px; }
-</style></head>
-<h1><a href="http://flamenco.berkeley.edu/">Flamenco</a></h1>
-<h2>University of California, Berkeley</h2>
+</style>
+<link rel="shortcut icon" href="https://dockerresourcesforwedge.s3.amazonaws.com/favicons/favicon.ico">
+</head>
+<div class="logo">
+<img src="https://dockerresourcesforwedge.s3.amazonaws.com/logo/_logo_wedge_w201_h60_.png" alt="Wedge logo">
+</div>
 <div>%s</div>''' % '\n'.join(text)
     sys.exit(0)
 
