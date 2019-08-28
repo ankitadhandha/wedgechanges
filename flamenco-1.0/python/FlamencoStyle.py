@@ -28,7 +28,7 @@ class FlamencoStyle(Style):
     
     def title(self): # style rules for the title box
         return [within('.title',
-                       rule('', fg='#fd4', bg='#248', padding='16px'),
+                       rule('', fg='#fd4', bg='#248', padding='8px', display='flow-root'),
                        rule('h1', size='20px', weight='bold', margin='0'),
                        rule('h2', size='10px', weight='normal', margin='0'),
                        rule('a', color='#fd4', decoration='none'),
