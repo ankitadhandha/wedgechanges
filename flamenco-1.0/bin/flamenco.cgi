@@ -120,7 +120,7 @@ else:
             else:
                 items.append('<li>%s (not running, not startable)' % instance)
     if items:
-        quit('Choose a Flamenco instance:', '<ul>%s</ul>' % '\n'.join(items))
+        quit('Choose a Wedge instance:', '<ul>%s</ul>' % '\n'.join(items))
     else:
         quit('There are no Flamenco instances yet. ',
              'To create one, use the command:',
